@@ -93,26 +93,50 @@
                     </select>
                 </div>
                 <div>
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Locality</h3>
+                    <select id="localityFilter"
+                        class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-[#008b9c]">
+                        <option value="">All Localities</option>
+                    </select>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Apartment Type</h3>
+                    <select id="apartmentTypeFilter"
+                        class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-[#008b9c]">
+                        <option value="">All Types</option>
+                        <option value="Apartment">Apartment</option>
+                        <option value="Villa">Villa</option>
+                        <option value="Independent House">Independent House</option>
+                        <option value="Penthouse">Penthouse</option>
+                        <option value="Studio">Studio</option>
+                    </select>
+                </div>
+                <div>
                     <h3 class="text-sm font-bold text-gray-800 mb-3">Special Features</h3>
                     <div class="space-y-2">
                         <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
                             <input type="checkbox" class="feature-filter w-4 h-4 rounded"
-                                data-feature="Vastu Compliant">
-                            <span>Vastu Compliant</span>
+                                data-feature="a modern interior">
+                            <span>A modern interior</span>
                         </label>
                         <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
-                            <input type="checkbox" class="feature-filter w-4 h-4 rounded" data-feature="Pooja Room">
-                            <span>Pooja Room</span>
-                        </label>
-                        <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
-                            <input type="checkbox" class="feature-filter w-4 h-4 rounded"
-                                data-feature="Modular Kitchen">
-                            <span>Modular Kitchen</span>
+                            <input type="checkbox" class="feature-filter w-4 h-4 rounded" data-feature="a bright room">
+                            <span>A bright room</span>
                         </label>
                         <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
                             <input type="checkbox" class="feature-filter w-4 h-4 rounded"
-                                data-feature="Covered Parking">
-                            <span>Covered Parking</span>
+                                data-feature="a modular kitchen">
+                            <span>A modular kitchen</span>
+                        </label>
+                        <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
+                            <input type="checkbox" class="feature-filter w-4 h-4 rounded"
+                                data-feature="a spacious living room">
+                            <span>A spacious living room</span>
+                        </label>
+                        <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
+                            <input type="checkbox" class="feature-filter w-4 h-4 rounded"
+                                data-feature="a balcony with open view">
+                            <span>A balcony with open view</span>
                         </label>
                     </div>
                 </div>
@@ -128,10 +152,6 @@
                 <div>
                     <h1 id="resultsTitle" class="text-2xl font-bold">AI-Verified Properties</h1>
                     <p id="resultsSubtitle" class="text-sm text-gray-500 mt-1">Loading listings from Agam AI...</p>
-                </div>
-                <div
-                    class="flex items-center gap-2 bg-white px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-semibold">
-                    Sort by: Relevance <i data-lucide="chevron-down" class="w-4 h-4 ml-1"></i>
                 </div>
             </div>
 
@@ -257,6 +277,23 @@
         let allResults = [];
         let activeBhk = null;
 
+        function updateLocalityFilterOptions(list) {
+            const localityFilter = document.getElementById('localityFilter');
+            const currentValue = localityFilter.value;
+            const uniqueLocalities = [...new Set(
+                (list || [])
+                    .map(p => (p.location || '').trim())
+                    .filter(Boolean)
+            )].sort((a, b) => a.localeCompare(b));
+
+            localityFilter.innerHTML = '<option value="">All Localities</option>' +
+                uniqueLocalities.map(loc => `<option value="${loc}">${loc}</option>`).join('');
+
+            if (currentValue && uniqueLocalities.includes(currentValue)) {
+                localityFilter.value = currentValue;
+            }
+        }
+
         function cardHTML(p) {
 
             const badge = p.ai_verified
@@ -334,8 +371,57 @@
             }
         }
 
+        function parsePriceToNumber(priceValue) {
+            if (!priceValue) return NaN;
+            const digits = String(priceValue).replace(/[^\d]/g, '');
+            if (!digits) return NaN;
+            return Number(digits);
+        }
+
+        function matchesBudgetRange(priceValue, budgetRange) {
+            const price = parsePriceToNumber(priceValue);
+            if (Number.isNaN(price) || !budgetRange) return !budgetRange;
+
+            if (budgetRange === '50L-1Cr') return price >= 5000000 && price <= 10000000;
+            if (budgetRange === '1Cr-2Cr') return price > 10000000 && price <= 20000000;
+            if (budgetRange === '2Cr-5Cr') return price > 20000000 && price <= 50000000;
+            if (budgetRange === '5Cr+') return price > 50000000;
+
+            return true;
+        }
+
+        function normalizeText(value) {
+            return String(value || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function matchesFeature(property, featureValue) {
+            const normalizedFeature = normalizeText(featureValue);
+            if (!normalizedFeature) return true;
+
+            const searchableBlob = normalizeText([
+                ...(property.tags || []),
+                ...(property.detections || []),
+                property.room_type,
+                property.title,
+                property.furnishing
+            ].join(' '));
+
+            if (!searchableBlob) return false;
+            if (searchableBlob.includes(normalizedFeature)) return true;
+
+            const featureTokens = normalizedFeature.split(' ').filter(Boolean);
+            return featureTokens.every(token => searchableBlob.includes(token));
+        }
+
         function applyFilters() {
             const features = [...document.querySelectorAll('.feature-filter:checked')].map(el => el.dataset.feature);
+            const selectedBudget = document.getElementById('budgetFilter').value;
+            const selectedLocality = document.getElementById('localityFilter').value;
+            const apartmentType = document.getElementById('apartmentTypeFilter').value;
             let filtered = allResults;
 
             if (activeBhk) {
@@ -345,7 +431,16 @@
                 });
             }
             if (features.length) {
-                filtered = filtered.filter(p => features.every(f => (p.tags || []).includes(f)));
+                filtered = filtered.filter(p => features.every(f => matchesFeature(p, f)));
+            }
+            if (selectedBudget) {
+                filtered = filtered.filter(p => matchesBudgetRange(p.price, selectedBudget));
+            }
+            if (selectedLocality) {
+                filtered = filtered.filter(p => (p.location || '').trim() === selectedLocality);
+            }
+            if (apartmentType) {
+                filtered = filtered.filter(p => (p.furnishing || '').toLowerCase() === apartmentType.toLowerCase());
             }
             showResults(filtered);
         }
@@ -355,6 +450,7 @@
             try {
                 const data = await searchProperties(query);
                 allResults = data.results || [];
+                updateLocalityFilterOptions(allResults);
                 const n = allResults.length;
                 resultsTitle.textContent = query ? `Results for "${query}"` : 'AI-Verified Properties';
                 resultsSubtitle.textContent = `${n} listing${n !== 1 ? 's' : ''} found`;
@@ -384,10 +480,15 @@
                     btn.classList.add('border-[#008b9c]', 'bg-teal-50', 'text-[#008b9c]');
                     btn.classList.remove('border-gray-200', 'text-gray-600');
                 }
+                applyFilters();
             });
         });
 
         document.getElementById('applyFilters').addEventListener('click', applyFilters);
+        document.getElementById('budgetFilter').addEventListener('change', applyFilters);
+        document.getElementById('localityFilter').addEventListener('change', applyFilters);
+        document.getElementById('apartmentTypeFilter').addEventListener('change', applyFilters);
+        document.querySelectorAll('.feature-filter').forEach(c => c.addEventListener('change', applyFilters));
 
         document.getElementById('resetFilters').addEventListener('click', () => {
             activeBhk = null;
@@ -397,6 +498,8 @@
             });
             document.querySelectorAll('.feature-filter').forEach(c => c.checked = false);
             document.getElementById('budgetFilter').value = '';
+            document.getElementById('localityFilter').value = '';
+            document.getElementById('apartmentTypeFilter').value = '';
             showResults(allResults);
         });
 

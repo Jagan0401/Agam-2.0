@@ -135,6 +135,8 @@
         const propTitle    = sessionStorage.getItem('propTitle')    || 'New Listing';
         const propLocation = sessionStorage.getItem('propLocation') || '';
         const propPrice    = sessionStorage.getItem('propPrice')    || '';
+        const propBhk      = sessionStorage.getItem('propBhk')      || '';
+        const propApartmentType = sessionStorage.getItem('propApartmentType') || '';
 
         if (propTitle) document.getElementById('listingBadge').textContent = propTitle;
 
@@ -244,6 +246,8 @@
                     title: propTitle,
                     location: propLocation,
                     price: propPrice,
+                    bhk: propBhk,
+                    furnishing: propApartmentType,
                     image: best.image_url,
                     quality_score: parseFloat(best.analysis.quality_score || best.analysis.quality || 0),
                     room_type: best.analysis.room_type || best.analysis.room || 'unknown',
@@ -257,6 +261,8 @@
                 sessionStorage.removeItem('propTitle');
                 sessionStorage.removeItem('propLocation');
                 sessionStorage.removeItem('propPrice');
+                sessionStorage.removeItem('propBhk');
+                sessionStorage.removeItem('propApartmentType');
                 
                 window.location.href = 'seller-dashboard.html';
             } catch (err) {
