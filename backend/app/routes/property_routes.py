@@ -46,6 +46,8 @@ class PropertyCreate(BaseModel):
     title: str
     location: str
     price: str
+    bhk: str
+    furnishing: str
     image: str
     quality_score: float
     room_type: str
@@ -64,6 +66,8 @@ def create_property(prop_in: PropertyCreate, db: Session = Depends(get_db), curr
         title=prop_in.title,
         location=prop_in.location,
         price=prop_in.price,
+        bhk=prop_in.bhk,
+        furnishing=prop_in.furnishing,
         image=prop_in.image,
         quality_score=prop_in.quality_score,
         room_type=prop_in.room_type,
