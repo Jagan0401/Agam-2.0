@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderation Queue - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-slate-900 flex flex-col md:flex-row min-h-screen">
+
+    <aside class="w-full md:w-64 bg-[#0f172a] text-slate-300 flex flex-col hidden md:flex sticky top-0 h-screen shrink-0">
+        <div class="p-6 border-b border-slate-800">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight text-white">Agam<span class="text-[#008b9c]">.</span></a>
+            <p class="text-xs font-bold text-[#008b9c] mt-1 uppercase tracking-wider">Admin Control</p>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="admin-dashboard.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-semibold transition-colors"><i data-lucide="activity" class="w-4 h-4"></i> Platform Overview</a>
+            <a href="admin-users.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-semibold transition-colors"><i data-lucide="users" class="w-4 h-4"></i> User Management</a>
+            <a href="admin-moderation.html" class="flex items-center gap-3 px-4 py-3 bg-[#008b9c]/20 text-white rounded-xl font-bold transition-colors"><i data-lucide="shield-alert" class="w-4 h-4"></i> Moderation Queue</a>
+            <a href="admin-analytics.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-semibold transition-colors"><i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics</a>
+            <div class="pt-4 mt-4 border-t border-slate-800">
+                <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl font-bold transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                </button>
+            </div>
+        </nav>
+
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto h-screen">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-8">
+                <h1 class="text-3xl font-extrabold tracking-tight">Moderation Queue</h1>
+                <p class="text-gray-500 mt-1 font-medium">Review AI-flagged listings and process reported properties.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Pending AI Review</p>
+                        <h3 class="text-3xl font-extrabold text-gray-900">42</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center"><i data-lucide="clock" class="w-6 h-6"></i></div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">User Reports</p>
+                        <h3 class="text-3xl font-extrabold text-gray-900">12</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center"><i data-lucide="flag" class="w-6 h-6"></i></div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Processed Today</p>
+                        <h3 id="pendingCount" class="text-3xl font-extrabold text-gray-900">...</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-green-50 text-green-500 flex items-center justify-center"><i data-lucide="check-check" class="w-6 h-6"></i></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div class="flex gap-4">
+                        <button class="px-5 py-2.5 bg-[#008b9c] text-white rounded-xl text-sm font-bold shadow-sm">All Items</button>
+                        <button class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all">AI Flags</button>
+                        <button class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all">User Reports</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                <th class="p-4 font-bold">Property Listing</th>
+                                <th class="p-4 font-bold">Reason</th>
+                                <th class="p-4 font-bold">Seller</th>
+                                <th class="p-4 font-bold">Submission Date</th>
+                                <th class="p-4 font-bold text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moderationQueue" class="divide-y divide-gray-100 text-sm">
+                            <!-- Items loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script>
+        lucide.createIcons();
+
+        async function initModeration() {
+            await loadProfile();
+            try {
+                const queue = await getModerationQueue();
+                
+                // Update stats
+                document.getElementById('pendingCount').textContent = queue.length;
+                
+                const tbody = document.getElementById('moderationQueue');
+                tbody.innerHTML = '';
+
+                if (queue.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-400 font-medium">Queue is currently empty</td></tr>`;
+                } else {
+                    queue.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-gray-50';
+                        const reasonClass = item.status === 'flagged' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-red-50 text-red-600 border-red-100';
+                        
+                        tr.innerHTML = `
+                            <td class="p-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-16 h-12 rounded-lg bg-gray-100 overflow-hidden relative border border-gray-100">
+                                        <div class="absolute inset-0 bg-slate-200 flex items-center justify-center"><i data-lucide="image" class="w-5 h-5 text-slate-400"></i></div>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-gray-900">${item.property_id}</p>
+                                        <p class="text-xs text-gray-500 font-medium">${item.title || 'Property Title'}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-4"><span class="${reasonClass} px-3 py-1 rounded-full text-xs font-bold border capitalize">${item.reason}</span></td>
+                            <td class="p-4 text-gray-600 font-medium text-xs">Seller ID: ${item.seller_id}</td>
+                            <td class="p-4 text-gray-500">${item.submission_date}</td>
+                            <td class="p-4 text-right flex justify-end gap-2 mt-1">
+                                <button onclick="handleModeration(${item.id}, 'approve')" class="p-2.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-xl transition-all" title="Approve"><i data-lucide="check" class="w-4 h-4"></i></button>
+                                <button onclick="handleModeration(${item.id}, 'reject')" class="p-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all" title="Reject"><i data-lucide="x" class="w-4 h-4"></i></button>
+                                <button class="p-2.5 bg-gray-50 text-gray-400 hover:bg-gray-100 rounded-xl transition-all" title="View Details"><i data-lucide="eye" class="w-4 h-4"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    lucide.createIcons();
+                }
+            } catch (err) {
+                console.error("Moderation load failed:", err);
+            }
+        }
+
+        async function handleModeration(id, action) {
+            if (confirm(`Confirm ${action} for this property?`)) {
+                try {
+                    await processModeration(id, action);
+                    initModeration();
+                } catch (err) {
+                    alert("Action failed: " + err.message);
+                }
+            }
+        }
+
+        initModeration();
+    </script>
+</body>
+
+</html>

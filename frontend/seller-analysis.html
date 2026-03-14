@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Analysis - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        .cursor { animation: blink 1s step-end infinite; }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-slate-900 flex flex-col md:flex-row min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex sticky top-0 h-screen shrink-0">
+        <div class="p-6 border-b border-gray-100">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight">Agam<span class="text-[#008b9c]">.</span></a>
+            <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Seller Workspace</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="seller-dashboard.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-semibold"><i data-lucide="home" class="w-4 h-4"></i> Dashboard</a>
+            <a href="seller-upload.html"    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-semibold"><i data-lucide="plus" class="w-4 h-4"></i> Upload Property</a>
+            <a href="seller-analysis.html"  class="flex items-center gap-3 px-4 py-3 bg-teal-50 text-[#008b9c] rounded-xl font-bold"><i data-lucide="sparkles" class="w-4 h-4"></i> Image Analysis</a>
+            <a href="ai-insights.html"      class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-semibold"><i data-lucide="trending-up" class="w-4 h-4"></i> AI Insights</a>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center justify-between gap-3 px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <div id="userInitials" class="w-8 h-8 rounded-full bg-[#0f172a] text-white flex items-center justify-center font-bold text-sm">??</div>
+                    <div>
+                        <p id="userName" class="text-sm font-bold text-gray-900">Loading...</p>
+                        <p id="userRole" class="text-xs text-gray-500 font-medium capitalize">User</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Logout">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-8 overflow-y-auto h-screen">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-8">
+                <span id="listingBadge" class="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-2 inline-block">New Listing</span>
+                <h1 class="text-3xl font-extrabold tracking-tight">AI Vision Processing</h1>
+                <p class="text-gray-500 mt-1 font-medium">Analyze uploaded images to score quality, detect rooms, and pick the best cover.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                <!-- Left: Queue + Publish -->
+                <div class="lg:col-span-5 space-y-6">
+
+                    <!-- Image Queue -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-bold flex items-center gap-2">
+                                <i data-lucide="image" class="w-5 h-5 text-[#008b9c]"></i>
+                                Uploaded Queue (<span id="queueCount">0</span>)
+                            </h2>
+                            <button id="runBtn"
+                                class="bg-[#008b9c] text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-[#007483] shadow-sm transition-colors">
+                                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Run AI
+                            </button>
+                        </div>
+
+                        <!-- No files notice -->
+                        <div id="noFilesNotice" class="hidden text-center py-6">
+                            <i data-lucide="image-off" class="w-8 h-8 text-gray-300 mx-auto mb-2"></i>
+                            <p class="text-sm text-gray-400 font-medium">No images queued. <a href="seller-upload.html" class="text-[#008b9c] hover:underline">Upload photos first.</a></p>
+                        </div>
+
+                        <!-- Image list -->
+                        <div id="imageQueue" class="space-y-3"></div>
+                    </div>
+
+                    <!-- Publish Box (shown after analysis) -->
+                    <div id="publishBox" class="bg-white p-6 rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hidden">
+                        <h3 class="font-bold text-lg mb-2">Ready for Publish</h3>
+                        <p id="publishMsg" class="text-sm text-gray-500 mb-6 font-medium">AI analysis complete. Review results and publish your listing.</p>
+                        <a href="seller-dashboard.html"
+                            class="w-full bg-[#0f172a] text-white px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-lg">
+                            Save & Publish Listing <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right: Terminal -->
+                <div class="lg:col-span-7">
+                    <div class="bg-[#0f172a] rounded-2xl shadow-2xl overflow-hidden h-full min-h-[500px] border border-slate-700 flex flex-col">
+                        <!-- Terminal chrome -->
+                        <div class="bg-slate-900 px-4 py-3 flex items-center justify-between border-b border-slate-800">
+                            <div class="flex gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            </div>
+                            <p class="text-xs font-mono text-slate-400 flex items-center gap-2">
+                                <i data-lucide="terminal" class="w-3.5 h-3.5"></i> agam-ai-engine
+                            </p>
+                            <div class="w-10"></div>
+                        </div>
+
+                        <!-- Terminal body -->
+                        <div id="termBody" class="p-6 font-mono text-sm overflow-y-auto flex-1 space-y-1">
+                            <p class="text-[#008b9c] font-bold">agam-ai@server:~$ <span class="text-slate-300 font-normal">analyze --session new</span></p>
+                            <div id="termIdle" class="text-slate-500 mt-2">Waiting for user to click Run AI...</div>
+                            <div id="termLoading" class="hidden space-y-2 mt-2"></div>
+                            <div id="termResults" class="hidden mt-4 space-y-6"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        lucide.createIcons();
+        loadProfile();
+
+        /* ── Load results from sessionStorage (set by seller-upload.html) ── */
+        let analysisResults = [];
+        try {
+            analysisResults = JSON.parse(sessionStorage.getItem('pendingAnalysisResults') || '[]');
+        } catch (e) { analysisResults = []; }
+
+        const propTitle    = sessionStorage.getItem('propTitle')    || 'New Listing';
+        const propLocation = sessionStorage.getItem('propLocation') || '';
+        const propPrice    = sessionStorage.getItem('propPrice')    || '';
+
+        if (propTitle) document.getElementById('listingBadge').textContent = propTitle;
+
+        const queueEl     = document.getElementById('imageQueue');
+        const queueCount  = document.getElementById('queueCount');
+        const noFilesEl   = document.getElementById('noFilesNotice');
+
+        if (!analysisResults.length) {
+            noFilesEl.classList.remove('hidden');
+        } else {
+            queueCount.textContent = analysisResults.length;
+            analysisResults.forEach((res, i) => {
+                const div = document.createElement('div');
+                div.id = `qitem-${i}`;
+                div.className = 'flex items-center gap-4 p-3 border border-gray-100 rounded-xl bg-gray-50/50 transition-colors';
+                div.innerHTML = `
+                    <img src="${res.image_url}" alt="${res.name}" class="w-16 h-16 object-cover rounded-lg shadow-sm shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-sm text-gray-900 truncate">${res.name}</p>
+                        <p id="qtag-${i}" class="text-xs font-medium text-gray-400 mt-1">Ready for review</p>
+                    </div>
+                    <div id="qicon-${i}" class="shrink-0 hidden"></div>`;
+                queueEl.appendChild(div);
+            });
+        }
+
+        const termIdle    = document.getElementById('termIdle');
+        const termLoading = document.getElementById('termLoading');
+        const termResults = document.getElementById('termResults');
+        const publishBox  = document.getElementById('publishBox');
+
+        function termBlock(data, filename) {
+            const room = (data.room_type || data.room || 'unknown').replace(/_/g, ' ');
+            const quality = parseFloat((data.quality_score || data.quality) ?? 0).toFixed(1);
+            const tags = (data.tags || []).join(', ') || '—';
+            const score = parseFloat(quality);
+            const scoreColor = score >= 8 ? 'text-green-400' : score >= 6 ? 'text-yellow-400' : 'text-red-400';
+            
+            const insights = data.insights || {};
+            const richness = insights.furniture_richness || 'Standard';
+
+            const action = score >= 7
+                ? `<span class="bg-green-500/10 text-green-400 px-2 py-1 rounded-md text-xs border border-green-500/20 block w-max mt-2">&gt; ACTION: CANDIDATE FOR HERO COVER</span>`
+                : `<span class="bg-red-500/10 text-red-400 px-2 py-1 rounded-md text-xs border border-red-500/20 block w-max mt-2 font-bold">&gt; WARNING: LOW QUALITY DETECTED</span>`;
+
+            const block = document.createElement('div');
+            block.className = 'border-l-2 border-slate-700 pl-4 space-y-1 mt-6';
+            block.innerHTML = `
+                <p><span class="text-slate-500">File:</span> <span class="text-slate-300">${filename}</span></p>
+                <p><span class="text-slate-500">Room:</span> <span class="text-white font-bold capitalize">${room}</span></p>
+                <p><span class="text-slate-500">Tags:</span> <span class="text-teal-300 font-medium">${tags}</span></p>
+                <p><span class="text-slate-500">Quality:</span> <span class="${scoreColor} font-bold">${quality}/10.0</span></p>
+                <p><span class="text-slate-500">Richness:</span> <span class="text-yellow-400 font-medium">${richness}</span></p>
+                ${action}`;
+            termResults.appendChild(block);
+        }
+
+        document.getElementById('runBtn').addEventListener('click', async function () {
+            if (!analysisResults.length) return;
+            this.disabled = true;
+            this.classList.add('opacity-50', 'cursor-not-allowed');
+            termIdle.classList.add('hidden');
+            termLoading.classList.remove('hidden');
+
+            // Simulate processing for UX
+            await new Promise(r => setTimeout(r, 1000));
+            
+            termLoading.classList.add('hidden');
+            termResults.classList.remove('hidden');
+            const sep = '<p class="text-slate-400">----------------------------------------</p>';
+            termResults.innerHTML = `<p class="text-green-400">Analysis verified. ${analysisResults.length} records loaded.</p>${sep}`;
+
+            analysisResults.forEach((r, i) => {
+                termBlock(r.analysis, r.name);
+                const tagEl = document.getElementById(`qtag-${i}`);
+                const iconEl = document.getElementById(`qicon-${i}`);
+                const quality = parseFloat(r.analysis.quality_score || r.analysis.quality || 0);
+                const room = (r.analysis.room_type || r.analysis.room || 'unknown').replace(/_/g, ' ');
+                
+                tagEl.textContent = `${room.charAt(0).toUpperCase() + room.slice(1)} · Q: ${quality.toFixed(1)}`;
+                tagEl.classList.replace('text-gray-400', quality >= 7 ? 'text-[#008b9c]' : 'text-red-400');
+                iconEl.classList.remove('hidden');
+                iconEl.innerHTML = quality >= 7 
+                    ? `<i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i>`
+                    : `<i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-500"></i>`;
+            });
+            lucide.createIcons();
+            termResults.innerHTML += sep + `<p class="text-[#008b9c] font-bold mt-4">agam-ai@server:~$ <span class="cursor text-white">_</span></p>`;
+            publishBox.classList.remove('hidden');
+        });
+
+        // Save & Publish
+        const saveBtn = publishBox.querySelector('a');
+        saveBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            saveBtn.classList.add('opacity-50', 'pointer-events-none');
+            saveBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Saving...`;
+            lucide.createIcons();
+
+            try {
+                // Find best image for cover
+                const best = analysisResults.reduce((prev, current) => 
+                    (parseFloat(prev.analysis.quality_score || 0) > parseFloat(current.analysis.quality_score || 0)) ? prev : current
+                );
+
+                const propertyData = {
+                    title: propTitle,
+                    location: propLocation,
+                    price: propPrice,
+                    image: best.image_url,
+                    quality_score: parseFloat(best.analysis.quality_score || best.analysis.quality || 0),
+                    room_type: best.analysis.room_type || best.analysis.room || 'unknown',
+                    tags: best.analysis.tags || []
+                };
+
+                await createProperty(propertyData);
+                
+                // Clear session storage
+                sessionStorage.removeItem('pendingAnalysisResults');
+                sessionStorage.removeItem('propTitle');
+                sessionStorage.removeItem('propLocation');
+                sessionStorage.removeItem('propPrice');
+                
+                window.location.href = 'seller-dashboard.html';
+            } catch (err) {
+                alert("Failed to publish: " + err.message);
+                saveBtn.classList.remove('opacity-50', 'pointer-events-none');
+                saveBtn.innerHTML = `Save & Publish Listing <i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

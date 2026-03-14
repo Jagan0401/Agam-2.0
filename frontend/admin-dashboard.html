@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-slate-900 flex flex-col md:flex-row min-h-screen">
+
+    <aside class="w-full md:w-64 bg-[#0f172a] text-slate-300 flex flex-col hidden md:flex sticky top-0 h-screen shrink-0">
+        <div class="p-6 border-b border-slate-800">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight text-white">Agam<span class="text-[#008b9c]">.</span></a>
+            <p class="text-xs font-bold text-[#008b9c] mt-1 uppercase tracking-wider">Admin Control</p>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="admin-dashboard.html" class="flex items-center gap-3 px-4 py-3 bg-[#008b9c]/20 text-white rounded-xl font-bold transition-colors"><i data-lucide="activity" class="w-4 h-4"></i> Platform Overview</a>
+            <a href="admin-users.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-semibold"><i data-lucide="users" class="w-4 h-4"></i> User Management</a>
+            <a href="admin-moderation.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-semibold"><i data-lucide="shield-alert" class="w-4 h-4"></i> Moderation Queue</a>
+            <a href="admin-analytics.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-semibold"><i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics</a>
+            <div class="pt-4 mt-4 border-t border-slate-800">
+                <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl font-bold transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                </button>
+            </div>
+        </nav>
+
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto h-screen">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-8">
+                <h1 class="text-3xl font-extrabold tracking-tight">System Overview</h1>
+                <p class="text-gray-500 mt-1 font-medium">Monitor platform health, user activity, and AI performance metrics.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 text-[#008b9c] flex items-center justify-center mb-4"><i data-lucide="users" class="w-5 h-5"></i></div>
+                    <h3 id="totalUsers" class="text-3xl font-extrabold text-gray-900 mb-1">...</h3>
+                    <p class="text-sm font-bold text-gray-500">Total Users</p>
+                    <p class="text-xs text-green-500 font-semibold mt-3 bg-green-50 inline-block px-2 py-1 rounded-md">+12% this week</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 text-[#008b9c] flex items-center justify-center mb-4"><i data-lucide="brain-circuit" class="w-5 h-5"></i></div>
+                    <h3 id="imagesProcessed" class="text-3xl font-extrabold text-gray-900 mb-1">...</h3>
+                    <p class="text-sm font-bold text-gray-500">Images Processed</p>
+                    <p class="text-xs text-green-500 font-semibold mt-3 bg-green-50 inline-block px-2 py-1 rounded-md">99.8% uptime</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 text-[#008b9c] flex items-center justify-center mb-4"><i data-lucide="activity" class="w-5 h-5"></i></div>
+                    <h3 id="aiAccuracy" class="text-3xl font-extrabold text-gray-900 mb-1">...</h3>
+                    <p class="text-sm font-bold text-gray-500">AI Accuracy Score</p>
+                    <p class="text-xs text-green-500 font-semibold mt-3 bg-green-50 inline-block px-2 py-1 rounded-md">+1.2% accuracy drift</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <h2 class="font-bold text-xl flex items-center gap-2"><i data-lucide="shield-alert" class="w-5 h-5 text-red-500"></i> Action Required: Moderation Queue</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                <th class="p-4 font-bold">Listing ID</th>
+                                <th class="p-4 font-bold">Reported Issue</th>
+                                <th class="p-4 font-bold">Seller</th>
+                                <th class="p-4 font-bold text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moderationList" class="divide-y divide-gray-100 text-sm">
+                            <!-- Items loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script>
+        lucide.createIcons();
+
+        async function initDashboard() {
+            await loadProfile();
+            
+            try {
+                // Load Stats
+                const stats = await getAdminStats();
+                document.getElementById('totalUsers').textContent = stats.total_users;
+                document.getElementById('imagesProcessed').textContent = stats.images_processed;
+                document.getElementById('aiAccuracy').textContent = stats.ai_accuracy;
+                
+                // Load Moderation Items (mini-list)
+                const queue = await getModerationQueue();
+                const tbody = document.getElementById('moderationList');
+                tbody.innerHTML = '';
+                
+                if (queue.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-400 font-medium">No pending actions required</td></tr>`;
+                } else {
+                    queue.slice(0, 5).forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-gray-50';
+                        tr.innerHTML = `
+                            <td class="p-4 font-bold text-gray-900">${item.property_id}</td>
+                            <td class="p-4"><span class="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold border border-red-100">${item.reason}</span></td>
+                            <td class="p-4 text-gray-600 font-medium">${item.seller_name || 'Seller'}</td>
+                            <td class="p-4 text-right flex justify-end gap-2">
+                                <button onclick="handleModeration(${item.id}, 'approve')" class="p-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg" title="Approve"><i data-lucide="check-circle" class="w-4 h-4"></i></button>
+                                <button onclick="handleModeration(${item.id}, 'reject')" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg" title="Reject"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    lucide.createIcons();
+                }
+            } catch (err) {
+                console.error("Dashboard init failed:", err);
+            }
+        }
+
+        async function handleModeration(id, action) {
+            if (confirm(`Are you sure you want to ${action} this listing?`)) {
+                try {
+                    await processModeration(id, action);
+                    initDashboard(); // Refresh
+                } catch (err) {
+                    alert("Action failed: " + err.message);
+                }
+            }
+        }
+
+        initDashboard();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-slate-900 flex flex-col md:flex-row min-h-screen">
+
+    <aside class="w-full md:w-64 bg-[#0f172a] text-slate-300 flex flex-col hidden md:flex sticky top-0 h-screen shrink-0">
+        <div class="p-6 border-b border-slate-800">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight text-white">Agam<span class="text-[#008b9c]">.</span></a>
+            <p class="text-xs font-bold text-[#008b9c] mt-1 uppercase tracking-wider">Admin Control</p>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="admin-dashboard.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-semibold transition-colors"><i data-lucide="activity" class="w-4 h-4"></i> Platform Overview</a>
+            <a href="admin-users.html" class="flex items-center gap-3 px-4 py-3 bg-[#008b9c]/20 text-white rounded-xl font-bold transition-colors"><i data-lucide="users" class="w-4 h-4"></i> User Management</a>
+            <a href="admin-moderation.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-semibold transition-colors"><i data-lucide="shield-alert" class="w-4 h-4"></i> Moderation Queue</a>
+            <a href="admin-analytics.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-semibold transition-colors"><i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics</a>
+            <div class="pt-4 mt-4 border-t border-slate-800">
+                <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl font-bold transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                </button>
+            </div>
+        </nav>
+
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto h-screen">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-8 flex justify-between items-end">
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-tight">User Management</h1>
+                    <p class="text-gray-500 mt-1 font-medium">Manage platform users, roles, and account statuses.</p>
+                </div>
+                <button class="bg-[#008b9c] text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-[#007483] transition-colors shadow-sm">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Add New User
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div class="relative w-full max-w-md">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-4 top-3.5 text-gray-400"></i>
+                        <input type="text" placeholder="Search users by name, email or role..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#008b9c] focus:ring-1 focus:ring-[#008b9c] text-sm font-medium transition-all" />
+                    </div>
+                    <div class="flex gap-3">
+                        <button class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-2"><i data-lucide="filter" class="w-4 h-4"></i> Filters</button>
+                        <button class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Export</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                <th class="p-4 font-bold">User</th>
+                                <th class="p-4 font-bold">Role</th>
+                                <th class="p-4 font-bold">Account Status</th>
+                                <th class="p-4 font-bold">Last Active</th>
+                                <th class="p-4 font-bold text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userList" class="divide-y divide-gray-100 text-sm">
+                            <!-- Users loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script>
+        lucide.createIcons();
+
+        async function initUsers() {
+            await loadProfile();
+            try {
+                const users = await getAdminUsers();
+                const tbody = document.getElementById('userList');
+                tbody.innerHTML = '';
+
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-gray-50';
+                    const initials = user.username.substring(0, 2).toUpperCase();
+                    const statusClass = user.status === 'active' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100';
+                    
+                    tr.innerHTML = `
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-teal-100 text-[#008b9c] flex items-center justify-center font-bold">${initials}</div>
+                                <div>
+                                    <p class="font-bold text-gray-900">${user.username}</p>
+                                    <p class="text-xs text-gray-500 font-medium">${user.email}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4"><span class="bg-teal-50 text-[#008b9c] px-3 py-1 rounded-full text-xs font-bold border border-teal-100 capitalize">${user.role}</span></td>
+                        <td class="p-4"><span class="${statusClass} px-3 py-1 rounded-full text-xs font-bold border italic capitalize">${user.status}</span></td>
+                        <td class="p-4 text-gray-600 font-medium">Recently</td>
+                        <td class="p-4 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button onclick="handleStatusToggle(${user.id}, '${user.status}')" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-gray-200 hover:bg-gray-50 transition-all">
+                                    ${user.status === 'active' ? 'Suspend' : 'Activate'}
+                                </button>
+                                <button class="p-2 text-gray-400 hover:text-[#008b9c] rounded-lg transition-colors"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                lucide.createIcons();
+            } catch (err) {
+                console.error("Failed to load users:", err);
+            }
+        }
+
+        async function handleStatusToggle(userId, currentStatus) {
+            const action = currentStatus === 'active' ? 'suspend' : 'activate';
+            if (confirm(`Are you sure you want to ${action} this user?`)) {
+                try {
+                    await toggleUserStatus(userId);
+                    initUsers();
+                } catch (err) {
+                    alert("Update failed: " + err.message);
+                }
+            }
+        }
+
+        initUsers();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-slate-900 flex flex-col md:flex-row min-h-screen">
+
+    <aside class="w-full md:w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex sticky top-0 h-screen shrink-0">
+        <div class="p-6 border-b border-gray-100">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight">
+                Agam<span class="text-[#008b9c]">.</span>
+            </a>
+            <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Seller Workspace</p>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="seller-dashboard.html" class="flex items-center gap-3 px-4 py-3 bg-teal-50 text-[#008b9c] rounded-xl font-bold transition-colors">
+                <i data-lucide="home" class="w-4 h-4"></i> Dashboard
+            </a>
+            <a href="seller-upload.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-semibold transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i> Upload Property
+            </a>
+            <a href="seller-analysis.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-semibold transition-colors">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> Image Analysis
+            </a>
+            <a href="ai-insights.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-semibold transition-colors">
+                <i data-lucide="trending-up" class="w-4 h-4"></i> AI Insights
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center justify-between gap-3 px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <div id="userInitials" class="w-8 h-8 rounded-full bg-[#0f172a] text-white flex items-center justify-center font-bold text-sm">??</div>
+                    <div>
+                        <p id="userName" class="text-sm font-bold text-gray-900">Loading...</p>
+                        <p id="userRole" class="text-xs text-gray-500 font-medium capitalize">User</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Logout">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto h-screen">
+        <div class="max-w-6xl mx-auto">
+            
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-tight">Welcome back, <span id="welcomeName">User</span></h1>
+                    <p class="text-gray-500 mt-1 font-medium">Here's what's happening with your properties today.</p>
+                </div>
+                <a href="seller-upload.html" class="bg-[#008b9c] text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#007483] transition-colors shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add New Listing
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 text-center sm:text-left">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 text-[#008b9c] flex items-center justify-center mb-4 mx-auto sm:mx-0"><i data-lucide="home" class="w-5 h-5"></i></div>
+                    <h3 id="statTotalListings" class="text-3xl font-extrabold text-gray-900 mb-1">0</h3>
+                    <p class="text-sm font-bold text-gray-500">Total Listings</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 text-[#008b9c] flex items-center justify-center mb-4 mx-auto sm:mx-0"><i data-lucide="check-circle-2" class="w-5 h-5"></i></div>
+                    <h3 id="statVerified" class="text-3xl font-extrabold text-gray-900 mb-1">0</h3>
+                    <p class="text-sm font-bold text-gray-500">AI Verified</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 text-[#008b9c] flex items-center justify-center mb-4 mx-auto sm:mx-0"><i data-lucide="bar-chart-2" class="w-5 h-5"></i></div>
+                    <h3 id="statViews" class="text-3xl font-extrabold text-gray-900 mb-1">...</h3>
+                    <p class="text-sm font-bold text-gray-500">Live Insights</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 text-[#008b9c] flex items-center justify-center mb-4 mx-auto sm:mx-0"><i data-lucide="image" class="w-5 h-5"></i></div>
+                    <h3 id="statQuality" class="text-3xl font-extrabold text-gray-900 mb-1">0.0</h3>
+                    <p class="text-sm font-bold text-gray-500">Avg. Quality Score</p>
+                </div>
+            </div>
+
+            <div id="optimizationBox" class="bg-[#0f172a] rounded-2xl p-6 mb-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg shadow-slate-900/10 hidden">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                        <i data-lucide="alert-circle" class="w-6 h-6 text-yellow-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-1">AI Image Optimization Needed</h3>
+                        <p id="optimizationText" class="text-gray-400 text-sm max-w-xl"></p>
+                    </div>
+                </div>
+                <a href="seller-analysis.html" class="bg-white text-[#0f172a] px-6 py-3 rounded-xl font-bold whitespace-nowrap hover:bg-gray-100 transition-colors">Review Images</a>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                    <h2 class="font-bold text-xl">Recent Listings</h2>
+                    <button class="text-sm font-semibold text-[#008b9c] hover:underline">View All</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-bold">Property</th>
+                                <th class="p-4 font-bold">Location</th>
+                                <th class="p-4 font-bold">Price</th>
+                                <th class="p-4 font-bold">Status</th>
+                                <th class="p-4 font-bold">AI Visual Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listingsTableBody" class="divide-y divide-gray-100 text-sm">
+                            <tr>
+                                <td colspan="5" class="p-8 text-center text-gray-400 font-medium">Loading your listings...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script>
+        async function initDashboard() {
+            try {
+                // 1. Load User Profile
+                await loadProfile();
+
+                // 2. Load Properties
+                const data = await getProperties();
+                const props = data.properties || [];
+                
+                // 3. Update Stats
+                const verifiedCount = props.filter(p => p.ai_verified).length;
+                const avgQuality = props.length > 0 ? (props.reduce((acc, p) => acc + (p.quality_score || 0), 0) / props.length).toFixed(1) : "0.0";
+                
+                document.getElementById('statTotalListings').textContent = props.length;
+                document.getElementById('statVerified').textContent = verifiedCount;
+                document.getElementById('statQuality').textContent = avgQuality;
+                document.getElementById('statViews').textContent = "Real-time"; // Placeholder until view tracking implemented
+
+                // 4. Update Table & Optimization Box
+                const tableBody = document.getElementById('listingsTableBody');
+                const optimizationBox = document.getElementById('optimizationBox');
+                const optimizationText = document.getElementById('optimizationText');
+
+                if (props.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-400 font-medium">No properties found. Start by uploading one!</td></tr>`;
+                    optimizationBox.classList.add('hidden');
+                } else {
+                    tableBody.innerHTML = props.map(p => `
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="p-4 flex items-center gap-4">
+                                <img src="${p.image}" class="w-12 h-12 rounded-lg object-cover bg-gray-100">
+                                <div>
+                                    <p class="font-bold text-gray-900">${p.title}</p>
+                                    <p class="text-xs text-gray-500">ID: ${p.property_id || 'PRO-'+p.id}</p>
+                                </div>
+                            </td>
+                            <td class="p-4 text-gray-600 font-medium">${p.location}</td>
+                            <td class="p-4 font-bold text-[#008b9c]">${p.price}</td>
+                            <td class="p-4">
+                                <span class="bg-teal-50 text-[#008b9c] border border-teal-100 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter">
+                                    ${p.ai_verified ? 'Verified' : 'Pending'}
+                                </span>
+                            </td>
+                            <td class="p-4 flex items-center gap-2 font-bold text-gray-700">
+                                <i data-lucide="${p.quality_score > 7 ? 'check-circle-2' : 'alert-circle'}" class="w-4 h-4 ${p.quality_score > 7 ? 'text-green-500' : 'text-amber-500'}"></i>
+                                ${p.quality_score ? p.quality_score.toFixed(1) : 'N/A'}
+                            </td>
+                        </tr>
+                    `).join('');
+
+                    // Show optimization box if any property has low quality
+                    const lowQualityProp = props.find(p => (p.quality_score || 0) < 7);
+                    if (lowQualityProp) {
+                        optimizationBox.classList.remove('hidden');
+                        optimizationText.textContent = `Your listing "${lowQualityProp.title}" has low quality photos. Our AI suggests re-shooting to increase engagement.`;
+                    } else {
+                        optimizationBox.classList.add('hidden');
+                    }
+                }
+                
+                lucide.createIcons();
+
+            } catch (err) {
+                console.error("Dashboard init failed:", err);
+                if (err.message === "Session expired") logout();
+            }
+        }
+
+        initDashboard();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-slate-900 pb-20">
+
+    <nav class="bg-white border-b border-gray-100 px-8 py-4 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight">
+                Agam<span class="text-[#008b9c]">.</span>
+            </a>
+            <div class="flex items-center gap-6">
+                <a href="buyer.html" class="text-sm font-semibold text-gray-500 hover:text-[#008b9c] flex items-center gap-2 transition-colors">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Search
+                </a>
+                <button onclick="logout()" class="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-red-600 transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                </button>
+            </div>
+
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-8 py-8" id="propertyContent">
+        <!-- Content will be injected by JavaScript -->
+        <div class="flex items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#008b9c]"></div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        lucide.createIcons();
+
+        async function initProperty() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const propertyId = urlParams.get('id');
+            const container = document.getElementById('propertyContent');
+
+            if (!propertyId) {
+                container.innerHTML = `<div class="text-center py-20"><h2 class="text-2xl font-bold text-gray-400">Property Not Found</h2><a href="buyer.html" class="text-[#008b9c] font-bold mt-4 block">Return to Search</a></div>`;
+                return;
+            }
+
+            try {
+                // Fetch real property details from backend
+                const response = await fetch(`http://localhost:8000/properties/` + propertyId);
+                const p = await response.json();
+
+                if (!p || p.detail) throw new Error("Property not found");
+
+                const detectionsHTML = (p.detections || []).map(d => 
+                    `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <span class="text-sm font-bold text-gray-700 capitalize">${d.label}</span>
+                        <span class="text-[10px] font-extrabold text-[#008b9c] bg-teal-50 px-2 py-0.5 rounded">${(d.confidence * 100).toFixed(0)}% Match</span>
+                    </div>`
+                ).join('') || `<p class="text-gray-400 text-xs italic">No objects detected yet.</p>`;
+
+                const tagsHTML = (p.tags || []).map(t => 
+                    `<div class="flex items-center gap-3 text-sm font-semibold text-gray-700"><div class="w-2 h-2 rounded-full bg-[#008b9c]"></div>${t}</div>`
+                ).join('');
+
+                container.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="bg-teal-50 text-[#008b9c] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-teal-100 uppercase tracking-wide">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> ${p.ai_verified ? 'Agam AI Verified' : 'AI Analysis Pending'}
+                            </span>
+                            <span class="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full">ID: ${p.property_id || 'PRO-' + p.id}</span>
+                        </div>
+                        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">${p.title}</h1>
+                        <p class="text-gray-500 flex items-center gap-1.5 font-medium">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i> ${p.location}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-4xl font-extrabold text-[#008b9c] mb-1">${p.price}</div>
+                        <p class="text-sm font-bold text-gray-500">₹${p.sqft ? Math.round(parseInt(p.price.replace(/[^0-9.]/g, '')) * 100000 / parseInt(p.sqft.replace(/,/g, ''))) : '0'} / sqft</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-8">
+                    <div class="flex items-center gap-8 px-4 divide-x divide-gray-100">
+                        <div class="pr-8">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Layout</p>
+                            <p class="font-bold text-lg">${p.bhk}</p>
+                        </div>
+                        <div class="px-8">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Super Area</p>
+                            <p class="font-bold text-lg">${p.sqft} sqft</p>
+                        </div>
+                        <div class="pl-8">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Furnishing</p>
+                            <p class="font-bold text-lg">${p.furnishing}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-xl font-bold flex items-center gap-2">
+                                <i data-lucide="sparkles" class="w-5 h-5 text-[#008b9c]"></i> Property Insights
+                            </h2>
+                            <p class="text-sm text-gray-500 mt-1">AI-detected room: <span class="font-bold text-gray-700 uppercase">${(p.room_type || 'unclassified').replace('_', ' ')}</span></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        <div class="md:col-span-8 relative rounded-2xl overflow-hidden group bg-gray-100 border border-gray-100">
+                            <img src="${p.image}" alt="${p.title}" class="w-full h-[500px] object-cover" />
+                            ${p.quality_score ? `<div class="absolute bottom-4 left-4 bg-white/95 backdrop-blur px-3 py-2 rounded-xl border border-gray-100 shadow-lg"><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">AI Quality Score</p><p class="text-2xl font-black text-[#008b9c]">${p.quality_score.toFixed(1)}<span class="text-xs text-gray-300 font-bold ml-1">/ 10</span></p></div>` : ''}
+                        </div>
+                        
+                        <div class="md:col-span-4 space-y-6">
+                            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                                <h4 class="text-xs font-black text-[#008b9c] uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <i data-lucide="scan" class="w-3 h-3"></i> YOLO Object Detection
+                                </h4>
+                                <div class="space-y-3">
+                                    ${detectionsHTML}
+                                </div>
+                            </div>
+                            
+                            <div class="bg-teal-50/30 p-6 rounded-2xl border border-teal-100/50">
+                                <h4 class="text-xs font-black text-[#008b9c] uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <i data-lucide="tags" class="w-3 h-3"></i> AI Semantic Tags
+                                </h4>
+                                <div class="flex flex-wrap gap-2">
+                                    ${(p.tags || []).map(t => `<span class="bg-white border border-teal-100 text-[#008b9c] px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">${t}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="flex-1 space-y-8">
+                        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                            <h3 class="text-xl font-bold mb-4">Property Description</h3>
+                            <p class="text-gray-600 leading-relaxed text-sm font-medium">This property has been verified by Agam AI. The room has been classified as a <b>${p.room_type || 'specified room'}</b> with a quality confidence of <b>${p.quality_score ? p.quality_score.toFixed(1) : 'N/A'}/10</b>. Our AI models identified key features like <b>${(p.tags || []).slice(0, 3).join(', ') || 'essential amenities'}</b>.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full lg:w-96 shrink-0">
+                        <div class="bg-[#0f172a] p-8 rounded-3xl text-white shadow-xl sticky top-28">
+                            <h3 class="font-bold text-xl mb-6">Interested?</h3>
+                            <button onclick="alert('Contacting Seller...')" class="w-full bg-[#008b9c] text-white py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 hover:bg-[#007483] transition-all shadow-lg shadow-teal-500/20 mb-4">Book a Site Visit</button>
+                            <button class="w-full bg-slate-800 text-gray-300 py-4 rounded-2xl font-bold border border-slate-700 hover:bg-slate-700 transition-colors">Chat with Agent</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+                lucide.createIcons();
+            } catch (err) {
+                container.innerHTML = `<div class="text-center py-20 text-red-500 font-bold">Error loading property: ${err.message}</div>`;
+            }
+        }
+
+        initProperty();
+    </script>
+
+</body>
+</html>

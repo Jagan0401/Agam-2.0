@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Property - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        #fileInput { display: none; }
+        .thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-slate-900 flex flex-col md:flex-row min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex sticky top-0 h-screen shrink-0">
+        <div class="p-6 border-b border-gray-100">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight">Agam<span class="text-[#008b9c]">.</span></a>
+            <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Seller Workspace</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="seller-dashboard.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-semibold transition-colors">
+                <i data-lucide="home" class="w-4 h-4"></i> Dashboard
+            </a>
+            <a href="seller-upload.html" class="flex items-center gap-3 px-4 py-3 bg-teal-50 text-[#008b9c] rounded-xl font-bold transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i> Upload Property
+            </a>
+            <a href="seller-analysis.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-semibold transition-colors">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> Image Analysis
+            </a>
+            <a href="ai-insights.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-semibold transition-colors">
+                <i data-lucide="trending-up" class="w-4 h-4"></i> AI Insights
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center justify-between gap-3 px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <div id="userInitials" class="w-8 h-8 rounded-full bg-[#0f172a] text-white flex items-center justify-center font-bold text-sm">??</div>
+                    <div>
+                        <p id="userName" class="text-sm font-bold text-gray-900">Loading...</p>
+                        <p id="userRole" class="text-xs text-gray-500 font-medium capitalize">User</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Logout">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-8 overflow-y-auto h-screen">
+        <div class="max-w-4xl mx-auto">
+            <div class="mb-8">
+                <h1 class="text-3xl font-extrabold tracking-tight">Add New Listing</h1>
+                <p class="text-gray-500 mt-1 font-medium">Enter property details and upload raw images for AI processing.</p>
+            </div>
+
+            <form id="uploadForm" class="space-y-8">
+
+                <!-- Basic Info -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-[#008b9c]"></i> Basic Information</h2>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1.5">Property Title</label>
+                            <input id="propTitle" type="text" placeholder="e.g. Modern 3BHK Apartment with Balcony"
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#008b9c] bg-gray-50/50 text-sm font-medium" required />
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-gray-700 mb-1.5">Location</label>
+                                <i data-lucide="map-pin" class="absolute left-3 top-9 w-4 h-4 text-gray-400"></i>
+                                <input id="propLocation" type="text" placeholder="e.g. Velachery, Chennai"
+                                    class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#008b9c] bg-gray-50/50 text-sm font-medium" required />
+                            </div>
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-gray-700 mb-1.5">Expected Price</label>
+                                <i data-lucide="indian-rupee" class="absolute left-3 top-9 w-4 h-4 text-gray-400"></i>
+                                <input id="propPrice" type="text" placeholder="e.g. 85,00,000"
+                                    class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#008b9c] bg-gray-50/50 text-sm font-medium" required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Media Upload -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold flex items-center gap-2 mb-1"><i data-lucide="sparkles" class="w-5 h-5 text-[#008b9c]"></i> AI Media Processing</h2>
+                        <p class="text-sm text-gray-500 font-medium">Upload your raw photos. Our AI will classify, score, and select the best cover image automatically.</p>
+                    </div>
+
+                    <!-- Hidden file input -->
+                    <input type="file" id="fileInput" accept="image/*" multiple>
+
+                    <!-- Dropzone -->
+                    <div id="dropzone"
+                        class="w-full border-2 border-dashed border-gray-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center transition-all cursor-pointer bg-gray-50 hover:border-[#008b9c] hover:bg-teal-50/30">
+                        <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 text-[#008b9c]">
+                            <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-1">Drag & drop your property photos</h3>
+                        <p class="text-sm text-gray-400 font-medium mb-6">Supports JPG, PNG — up to 50 raw photos</p>
+                        <button type="button" id="browseBtn"
+                            class="px-6 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50">
+                            Browse Files
+                        </button>
+                    </div>
+
+                    <!-- Validation error -->
+                    <div id="fileError" class="hidden mt-3 text-sm font-semibold text-red-500 flex items-center gap-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                        <span>Please select at least one image before continuing.</span>
+                    </div>
+
+                    <!-- Thumbnail preview grid -->
+                    <div id="previewGrid" class="hidden mt-6 grid grid-cols-4 md:grid-cols-6 gap-3"></div>
+
+                    <!-- File count badge -->
+                    <div id="fileCount" class="hidden mt-4 flex items-center gap-2 text-sm font-semibold text-[#008b9c]">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                        <span id="fileCountText"></span>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="flex justify-end pt-4 pb-12">
+                    <button type="submit"
+                        class="bg-[#008b9c] text-white px-8 py-4 rounded-xl font-extrabold flex items-center justify-center gap-2 hover:bg-[#007483] shadow-lg shadow-teal-500/20 text-lg transition-colors">
+                        Proceed to AI Analysis <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        lucide.createIcons();
+        loadProfile();
+
+
+        const dropzone    = document.getElementById('dropzone');
+        const fileInput   = document.getElementById('fileInput');
+        const browseBtn   = document.getElementById('browseBtn');
+        const previewGrid = document.getElementById('previewGrid');
+        const fileCount   = document.getElementById('fileCount');
+        const fileCountText = document.getElementById('fileCountText');
+        const fileError   = document.getElementById('fileError');
+        const uploadForm  = document.getElementById('uploadForm');
+
+        let selectedFiles = [];
+
+        /* ── Open file picker ─────────────────────────────────────── */
+        browseBtn.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('click', (e) => {
+            if (e.target === browseBtn || browseBtn.contains(e.target)) return;
+            fileInput.click();
+        });
+
+        /* ── Drag & drop ──────────────────────────────────────────── */
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-[#008b9c]', 'bg-teal-50/50');
+        });
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('border-[#008b9c]', 'bg-teal-50/50');
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-[#008b9c]', 'bg-teal-50/50');
+            handleFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('image/')));
+        });
+
+        /* ── File input change ────────────────────────────────────── */
+        fileInput.addEventListener('change', () => {
+            handleFiles([...fileInput.files]);
+        });
+
+        /* ── Process chosen files ─────────────────────────────────── */
+        function handleFiles(files) {
+            if (!files.length) return;
+            fileError.classList.add('hidden');
+            
+            // Append and prevent duplicates
+            files.forEach(file => {
+                const isDuplicate = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+                if (!isDuplicate) selectedFiles.push(file);
+            });
+
+            renderPreviews();
+        }
+
+        function renderPreviews() {
+            if (!selectedFiles.length) {
+                previewGrid.classList.add('hidden');
+                fileCount.classList.add('hidden');
+                previewGrid.innerHTML = '';
+                return;
+            }
+
+            previewGrid.classList.remove('hidden');
+            previewGrid.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'relative group aspect-square';
+                    wrapper.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-full object-cover rounded-xl border border-gray-100 shadow-sm" alt="${file.name}">
+                        <button onclick="removeFile(${index})" type="button" 
+                            class="absolute top-1.5 right-1.5 p-1 bg-white/90 text-red-500 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    `;
+                    previewGrid.appendChild(wrapper);
+                    lucide.createIcons();
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Update count badge
+            fileCount.classList.remove('hidden');
+            fileCountText.textContent = `${selectedFiles.length} image${selectedFiles.length !== 1 ? 's' : ''} selected and ready for AI analysis`;
+
+            // Persist file names
+            sessionStorage.setItem('pendingFileNames', JSON.stringify(selectedFiles.map(f => f.name)));
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            renderPreviews();
+        }
+
+        /* ── Form submit → upload files and pass to analysis page ────── */
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedFiles.length) {
+                fileError.classList.remove('hidden');
+                dropzone.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            const submitBtn = uploadForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Processing...`;
+            lucide.createIcons();
+
+            try {
+                // Store property metadata
+                sessionStorage.setItem('propTitle',    document.getElementById('propTitle').value);
+                sessionStorage.setItem('propLocation', document.getElementById('propLocation').value);
+                sessionStorage.setItem('propPrice',    document.getElementById('propPrice').value);
+
+                // Upload files one by one (to avoid payload size issues)
+                const uploadResults = [];
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const result = await uploadImage(selectedFiles[i]);
+                    uploadResults.push({
+                        name: selectedFiles[i].name,
+                        image_url: result.image_url,
+                        analysis: result.analysis
+                    });
+                }
+
+                // Store analysis results instead of raw files
+                sessionStorage.setItem('pendingAnalysisResults', JSON.stringify(uploadResults));
+                window.location.href = 'seller-analysis.html';
+
+            } catch (err) {
+                console.error("Upload failed:", err);
+                alert("Upload failed: " + err.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `Proceed to AI Analysis <i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

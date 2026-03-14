@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Insights - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-slate-900 flex flex-col md:flex-row min-h-screen">
+
+    <aside class="w-full md:w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex sticky top-0 h-screen shrink-0">
+        <div class="p-6 border-b border-gray-100">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight">Agam<span class="text-[#008b9c]">.</span></a>
+            <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Seller Workspace</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="seller-dashboard.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-semibold"><i data-lucide="home" class="w-4 h-4"></i> Dashboard</a>
+            <a href="seller-upload.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-semibold"><i data-lucide="plus" class="w-4 h-4"></i> Upload Property</a>
+            <a href="seller-analysis.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-semibold"><i data-lucide="sparkles" class="w-4 h-4"></i> Image Analysis</a>
+            <a href="ai-insights.html" class="flex items-center gap-3 px-4 py-3 bg-teal-50 text-[#008b9c] rounded-xl font-bold"><i data-lucide="trending-up" class="w-4 h-4"></i> AI Insights</a>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center justify-between gap-3 px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <div id="userInitials" class="w-8 h-8 rounded-full bg-[#0f172a] text-white flex items-center justify-center font-bold text-sm">??</div>
+                    <div>
+                        <p id="userName" class="text-sm font-bold text-gray-900">Loading...</p>
+                        <p id="userRole" class="text-xs text-gray-500 font-medium capitalize">User</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Logout">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto h-screen">
+        <div class="max-w-5xl mx-auto">
+            <div class="mb-8">
+                <h1 class="text-3xl font-extrabold tracking-tight flex items-center gap-3">Listing Intelligence <i data-lucide="sparkles" class="w-7 h-7 text-[#008b9c]"></i></h1>
+                <p class="text-gray-500 mt-1 font-medium">Data-driven suggestions to improve your property visibility.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center gap-2 text-gray-500 mb-2 font-bold text-sm"><i data-lucide="home" class="w-4 h-4"></i> Total Properties Managed</div>
+                    <div id="insightCount" class="text-4xl font-extrabold">0</div>
+                    <div class="text-teal-500 text-xs font-bold flex items-center gap-1 mt-2">Active in your portfolio</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center gap-2 text-gray-500 mb-2 font-bold text-sm"><i data-lucide="camera" class="w-4 h-4"></i> Avg. Photo Quality</div>
+                    <div id="insightScore" class="text-4xl font-extrabold text-[#008b9c]">0.0<span class="text-xl text-gray-400">/10</span></div>
+                    <div class="text-gray-500 text-xs font-bold mt-2">Based on latest AI scans</div>
+                </div>
+            </div>
+
+            <h2 class="text-xl font-bold mb-4">Actionable AI Suggestions</h2>
+            
+            <div id="suggestionsList" class="space-y-6">
+                <!-- Dynamic Suggestions -->
+                <div class="bg-white p-12 text-center rounded-2xl border border-dashed border-gray-200">
+                    <p class="text-gray-400 font-medium">Scanning your portfolio for AI insights...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script>
+        async function initInsights() {
+            try {
+                await loadProfile();
+                const data = await getProperties();
+                const props = data.properties || [];
+
+                document.getElementById('insightCount').textContent = props.length;
+                const avgQuality = props.length > 0 ? (props.reduce((acc, p) => acc + (p.quality_score || 0), 0) / props.length).toFixed(1) : "0.0";
+                document.getElementById('insightScore').innerHTML = `${avgQuality}<span class="text-xl text-gray-400">/10</span>`;
+
+                const suggestionsList = document.getElementById('suggestionsList');
+                const lowQuality = props.filter(p => (p.quality_score || 0) < 7);
+
+                if (lowQuality.length === 0) {
+                    suggestionsList.innerHTML = `
+                        <div class="bg-white p-12 text-center rounded-2xl border border-gray-100 shadow-sm">
+                            <div class="bg-green-50 w-16 h-16 rounded-full flex items-center justify-center text-green-500 mx-auto mb-4">
+                                <i data-lucide="sparkles" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">Your Portfolio is Optimized!</h3>
+                            <p class="text-gray-500 font-medium">All your listings have high quality scores. Your visibility is at its peak.</p>
+                        </div>
+                    `;
+                } else {
+                    suggestionsList.innerHTML = lowQuality.map(p => `
+                        <div class="bg-white rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden flex flex-col md:flex-row mb-6">
+                            <div class="bg-amber-50 p-6 md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-amber-100">
+                                <div class="bg-white w-10 h-10 rounded-full flex items-center justify-center text-amber-500 shadow-sm mb-4"><i data-lucide="lightbulb" class="w-5 h-5"></i></div>
+                                <h3 class="font-bold text-amber-800 mb-1">Quality Warning</h3>
+                                <p class="text-sm text-amber-600 font-medium">Poor visual score detected.</p>
+                            </div>
+                            <div class="p-6 md:w-2/3 flex flex-col justify-center">
+                                <p class="text-gray-700 font-medium mb-4 text-sm leading-relaxed">Listing <span class="font-bold text-gray-900">${p.title}</span> has a visual score of ${p.quality_score.toFixed(1)}. Replacing low-resolution photos can significantly boost inquiries.</p>
+                                <div class="flex gap-3">
+                                    <a href="seller-analysis.html" class="bg-[#0f172a] text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-800">Review Analysis</a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                lucide.createIcons();
+            } catch (err) {
+                console.error("Insights init failed:", err);
+            }
+        }
+        initInsights();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Properties - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom scrollbar for the chat window */
+        #chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="bg-[#fafafa] text-slate-900">
+
+    <nav class="bg-white border-b border-gray-100 px-8 py-4 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight">
+                Agam<span class="text-[#008b9c]">.</span>
+            </a>
+            <div class="flex-1 max-w-2xl mx-8">
+                <div
+                    class="bg-gray-50 flex items-center px-4 py-2 rounded-full border border-gray-200 focus-within:border-[#008b9c] transition-colors">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+                    <input id="searchInput" type="text"
+                        placeholder='Try "bright living room in Chennai" or "Vastu compliant 3BHK"'
+                        class="w-full bg-transparent border-none focus:outline-none px-3 text-sm font-medium text-gray-700">
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-8 h-8 rounded-full bg-[#008b9c] text-white flex items-center justify-center font-bold text-sm">
+                    J</div>
+                <button onclick="logout()" class="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-red-600 transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> 
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
+            </div>
+
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-8 py-8 flex gap-8 items-start">
+
+        <aside
+            class="w-72 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24 shrink-0 hidden md:block">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="font-bold flex items-center gap-2"><i data-lucide="filter" class="w-4 h-4"></i> Filters</h2>
+                <button id="resetFilters" class="text-xs text-[#008b9c] font-semibold hover:underline">Reset</button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">BHK Type</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors"
+                            data-bhk="1">1 BHK</button>
+                        <button
+                            class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors"
+                            data-bhk="2">2 BHK</button>
+                        <button
+                            class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors"
+                            data-bhk="3">3 BHK</button>
+                        <button
+                            class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors"
+                            data-bhk="4">4+ BHK</button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Budget</h3>
+                    <select id="budgetFilter"
+                        class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-[#008b9c]">
+                        <option value="">All Budgets</option>
+                        <option value="50L-1Cr">₹50 L – ₹1 Cr</option>
+                        <option value="1Cr-2Cr">₹1 Cr – ₹2 Cr</option>
+                        <option value="2Cr-5Cr">₹2 Cr – ₹5 Cr</option>
+                        <option value="5Cr+">Above ₹5 Cr</option>
+                    </select>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Special Features</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
+                            <input type="checkbox" class="feature-filter w-4 h-4 rounded"
+                                data-feature="Vastu Compliant">
+                            <span>Vastu Compliant</span>
+                        </label>
+                        <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
+                            <input type="checkbox" class="feature-filter w-4 h-4 rounded" data-feature="Pooja Room">
+                            <span>Pooja Room</span>
+                        </label>
+                        <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
+                            <input type="checkbox" class="feature-filter w-4 h-4 rounded"
+                                data-feature="Modular Kitchen">
+                            <span>Modular Kitchen</span>
+                        </label>
+                        <label class="flex items-center gap-3 text-sm text-gray-600 font-medium cursor-pointer group">
+                            <input type="checkbox" class="feature-filter w-4 h-4 rounded"
+                                data-feature="Covered Parking">
+                            <span>Covered Parking</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <button id="applyFilters"
+                class="w-full mt-8 bg-[#008b9c] text-white py-3 rounded-xl font-bold hover:bg-[#007483] transition-colors">
+                Apply Filters
+            </button>
+        </aside>
+
+        <main class="flex-1 min-w-0">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 id="resultsTitle" class="text-2xl font-bold">AI-Verified Properties</h1>
+                    <p id="resultsSubtitle" class="text-sm text-gray-500 mt-1">Loading listings from Agam AI...</p>
+                </div>
+                <div
+                    class="flex items-center gap-2 bg-white px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-semibold">
+                    Sort by: Relevance <i data-lucide="chevron-down" class="w-4 h-4 ml-1"></i>
+                </div>
+            </div>
+
+            <div id="offlineNotice"
+                class="hidden bg-red-50 border border-red-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 shrink-0 mt-0.5"></i>
+                <p class="text-sm font-medium text-red-800">
+                    Unable to connect to Agam AI services. Please ensure the backend is running.
+                </p>
+            </div>
+
+            <div id="skeletonGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
+                    <div class="h-56 bg-gray-100"></div>
+                    <div class="p-5 space-y-3">
+                        <div class="h-4 bg-gray-100 rounded w-3/4"></div>
+                        <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+                        <div class="h-3 bg-gray-100 rounded w-full"></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
+                    <div class="h-56 bg-gray-100"></div>
+                    <div class="p-5 space-y-3">
+                        <div class="h-4 bg-gray-100 rounded w-3/4"></div>
+                        <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+                        <div class="h-3 bg-gray-100 rounded w-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultsGrid" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+
+            <div id="emptyState" class="hidden text-center py-20">
+                <i data-lucide="search-x" class="w-12 h-12 text-gray-300 mx-auto mb-4"></i>
+                <h3 class="text-lg font-bold text-gray-500 mb-2">No properties found</h3>
+                <p class="text-sm text-gray-400">Try a different keyword or clear your filters.</p>
+                <button onclick="document.getElementById('resetFilters').click()"
+                    class="mt-6 text-[#008b9c] font-semibold text-sm hover:underline">Clear all filters</button>
+            </div>
+        </main>
+    </div>
+
+    <div id="agam-chatbot-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
+
+        <div id="agam-chat-window"
+            class="hidden w-80 sm:w-96 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 mb-4 overflow-hidden flex flex-col transition-all duration-300 origin-bottom-right">
+
+            <div class="bg-[#0f172a] text-white px-5 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-[#008b9c] flex items-center justify-center shadow-sm">
+                        <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm tracking-wide">Agam Intelligence</h3>
+                        <p class="text-[10px] text-teal-400 font-medium flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span> Online
+                        </p>
+                    </div>
+                </div>
+                <button id="close-chat-btn" class="text-gray-400 hover:text-white transition-colors focus:outline-none">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="chat-messages"
+                class="h-80 p-5 overflow-y-auto bg-slate-50 flex flex-col gap-4 text-sm scroll-smooth">
+                <!-- Initial Greeting -->
+                <div class="flex items-start gap-2.5 max-w-[85%]">
+                    <div class="w-7 h-7 rounded-full bg-[#008b9c] flex items-center justify-center shrink-0 mt-1">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div class="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none shadow-sm text-gray-700 font-bold">
+                        Hi! I'm Agam Intelligence. 
+                    </div>
+                </div>
+                <!-- Language Selection -->
+                <div id="language-options" class="flex flex-col gap-2 pl-9">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Choose your language</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="selectLanguage('english', 'English')" class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:border-[#008b9c] hover:text-[#008b9c] transition-all font-semibold text-xs shadow-sm">English</button>
+                        <button onclick="selectLanguage('tamil', 'தமிழ்')" class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:border-[#008b9c] hover:text-[#008b9c] transition-all font-semibold text-xs shadow-sm">தமிழ் (Tamil)</button>
+                        <button onclick="selectLanguage('telugu', 'తెలుగు')" class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:border-[#008b9c] hover:text-[#008b9c] transition-all font-semibold text-xs shadow-sm">తెలుగు (Telugu)</button>
+                        <button onclick="selectLanguage('kannada', 'ಕನ್ನಡ')" class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:border-[#008b9c] hover:text-[#008b9c] transition-all font-semibold text-xs shadow-sm">ಕನ್ನಡ (Kannada)</button>
+                        <button onclick="selectLanguage('malayalam', 'മലയാളം')" class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:border-[#008b9c] hover:text-[#008b9c] transition-all font-semibold text-xs shadow-sm">മലയാളം (Malayalam)</button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="p-4 bg-white border-t border-gray-100">
+                <form id="chat-form" class="flex items-center gap-2">
+                    <input type="text" id="chat-input" placeholder="Ask about properties, Vastu, etc..."
+                        class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#008b9c] focus:ring-1 focus:ring-[#008b9c] transition-all text-sm font-medium"
+                        autocomplete="off" />
+                    <button type="submit"
+                        class="w-10 h-10 bg-[#008b9c] text-white rounded-xl flex items-center justify-center hover:bg-[#007483] transition-colors shadow-sm shrink-0 focus:outline-none">
+                        <i data-lucide="send" class="w-4 h-4 ml-0.5"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <button id="chatbot-toggle-btn"
+            class="w-14 h-14 bg-[#008b9c] text-white rounded-full flex items-center justify-center shadow-lg shadow-teal-500/30 hover:bg-[#007483] hover:scale-105 transition-all duration-300 focus:outline-none">
+            <i data-lucide="message-square-text" class="w-6 h-6"></i>
+        </button>
+    </div>
+
+    <script src="js/api.js"></script>
+
+    <script>
+        lucide.createIcons();
+
+        // --- GRID LOGIC ---
+        const searchInput = document.getElementById('searchInput');
+        const resultsGrid = document.getElementById('resultsGrid');
+        const skeletonGrid = document.getElementById('skeletonGrid');
+        const emptyState = document.getElementById('emptyState');
+        const resultsTitle = document.getElementById('resultsTitle');
+        const resultsSubtitle = document.getElementById('resultsSubtitle');
+        const offlineNotice = document.getElementById('offlineNotice');
+
+        let allResults = [];
+        let activeBhk = null;
+
+        function cardHTML(p) {
+
+            const badge = p.ai_verified
+                ? `<div class="bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-[10px] font-bold text-[#008b9c] flex items-center gap-1 shadow-sm uppercase tracking-wider">
+                     <i data-lucide="shield-check" class="w-3 h-3"></i> AI Verified
+                   </div>` : '';
+                   
+            const qualityBadge = p.quality_score 
+                ? `<div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-gray-700 shadow-sm">
+                    Quality: ${p.quality_score.toFixed(1)}/10
+                   </div>` : '';
+
+            const roomBadge = p.room_type
+                ? `<div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-white uppercase tracking-widest">
+                    ${p.room_type.replace('_', ' ')}
+                   </div>` : '';
+
+            const tags = (p.tags || []).slice(0, 3).map(t =>
+                `<span class="bg-teal-50 border border-teal-100 text-[#008b9c] px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tight">${t}</span>`
+            ).join('');
+
+
+            return `
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300 group">
+                <div class="relative h-56 overflow-hidden bg-gray-100">
+                    <a href="property.html?id=${p.id}">
+                        <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+                    </a>
+                    <div class="absolute top-3 left-3">${badge}</div>
+                    ${qualityBadge}
+                    ${roomBadge}
+                    <button class="absolute top-3 right-3 p-2 bg-white/50 hover:bg-white backdrop-blur-sm rounded-full text-gray-600 hover:text-red-500 transition-all">
+
+                        <i data-lucide="heart" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-lg leading-tight group-hover:text-[#008b9c] transition-colors">
+                            <a href="property.html?id=${p.id}">${p.title}</a>
+                        </h3>
+                        <span class="text-xl font-extrabold text-[#008b9c] whitespace-nowrap ml-2">${p.price}</span>
+                    </div>
+                    <p class="text-sm text-gray-500 flex items-center gap-1.5 mb-4">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-400"></i> ${p.location}
+                    </p>
+                    <div class="flex items-center gap-3 text-xs font-semibold text-gray-600 mb-4 border-y border-gray-100 py-3">
+                        <span>${p.bhk}</span>
+                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                        <span>${p.sqft} sqft</span>
+                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                        <span>${p.furnishing}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">${tags}</div>
+                </div>
+            </div>`;
+        }
+
+        function showLoading() {
+            skeletonGrid.classList.remove('hidden');
+            resultsGrid.classList.add('hidden');
+            emptyState.classList.add('hidden');
+        }
+
+        function showResults(list) {
+            skeletonGrid.classList.add('hidden');
+            if (!list.length) {
+                resultsGrid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                resultsGrid.classList.remove('hidden');
+                resultsGrid.innerHTML = list.map(cardHTML).join('');
+                lucide.createIcons();
+            }
+        }
+
+        function applyFilters() {
+            const features = [...document.querySelectorAll('.feature-filter:checked')].map(el => el.dataset.feature);
+            let filtered = allResults;
+
+            if (activeBhk) {
+                filtered = filtered.filter(p => {
+                    const n = parseInt(p.bhk);
+                    return activeBhk === 4 ? n >= 4 : n === activeBhk;
+                });
+            }
+            if (features.length) {
+                filtered = filtered.filter(p => features.every(f => (p.tags || []).includes(f)));
+            }
+            showResults(filtered);
+        }
+
+        async function fetchResults(query) {
+            showLoading();
+            try {
+                const data = await searchProperties(query);
+                allResults = data.results || [];
+                const n = allResults.length;
+                resultsTitle.textContent = query ? `Results for "${query}"` : 'AI-Verified Properties';
+                resultsSubtitle.textContent = `${n} listing${n !== 1 ? 's' : ''} found`;
+                applyFilters();
+            } catch (e) {
+                console.error("Search failed:", e);
+                offlineNotice.classList.remove('hidden');
+                resultsTitle.textContent = 'Service Unavailable';
+                resultsSubtitle.textContent = 'Connection to backend failed';
+                showResults([]); // Show empty state
+            }
+        }
+
+        document.querySelectorAll('.bhk-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = parseInt(btn.dataset.bhk);
+                if (activeBhk === val) {
+                    activeBhk = null;
+                    btn.classList.remove('border-[#008b9c]', 'bg-teal-50', 'text-[#008b9c]');
+                    btn.classList.add('border-gray-200', 'text-gray-600');
+                } else {
+                    activeBhk = val;
+                    document.querySelectorAll('.bhk-btn').forEach(b => {
+                        b.classList.remove('border-[#008b9c]', 'bg-teal-50', 'text-[#008b9c]');
+                        b.classList.add('border-gray-200', 'text-gray-600');
+                    });
+                    btn.classList.add('border-[#008b9c]', 'bg-teal-50', 'text-[#008b9c]');
+                    btn.classList.remove('border-gray-200', 'text-gray-600');
+                }
+            });
+        });
+
+        document.getElementById('applyFilters').addEventListener('click', applyFilters);
+
+        document.getElementById('resetFilters').addEventListener('click', () => {
+            activeBhk = null;
+            document.querySelectorAll('.bhk-btn').forEach(b => {
+                b.classList.remove('border-[#008b9c]', 'bg-teal-50', 'text-[#008b9c]');
+                b.classList.add('border-gray-200', 'text-gray-600');
+            });
+            document.querySelectorAll('.feature-filter').forEach(c => c.checked = false);
+            document.getElementById('budgetFilter').value = '';
+            showResults(allResults);
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            const q = searchInput.value.trim();
+            const url = new URL(window.location.href);
+            url.searchParams.set('q', q);
+            window.history.pushState({}, '', url);
+            fetchResults(q);
+        });
+
+        // Initialize grid
+        const q0 = new URLSearchParams(window.location.search).get('q') || '';
+        searchInput.value = q0;
+        fetchResults(q0);
+
+
+        // --- CHATBOT LOGIC ---
+        const chatWindow = document.getElementById('agam-chat-window');
+        const toggleBtn = document.getElementById('chatbot-toggle-btn');
+        const closeBtn = document.getElementById('close-chat-btn');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const messagesContainer = document.getElementById('chat-messages');
+        
+        let selectedLanguage = 'english';
+        let isLanguageSelected = false;
+
+        window.selectLanguage = (lang, label) => {
+            selectedLanguage = lang;
+            isLanguageSelected = true;
+            document.getElementById('language-options').remove();
+            
+            // Add user choice to chat
+            const choiceHTML = `
+                <div class="flex items-start gap-2.5 max-w-[85%] self-end flex-row-reverse animate-in fade-in slide-in-from-bottom-2">
+                    <div class="bg-[#0f172a] text-white p-3 rounded-2xl rounded-tr-none shadow-sm font-medium">
+                        Language selected: ${label}
+                    </div>
+                </div>
+            `;
+            messagesContainer.insertAdjacentHTML('beforeend', choiceHTML);
+            
+            // Add bot intro in selected language
+            const botIntroHTML = `
+                <div class="flex items-start gap-2.5 max-w-[85%] animate-in fade-in slide-in-from-bottom-2">
+                    <div class="w-7 h-7 rounded-full bg-[#008b9c] flex items-center justify-center shrink-0 mt-1">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div class="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none shadow-sm text-gray-700 font-medium">
+                        ${getWelcomeMessage(lang)}
+                    </div>
+                </div>
+            `;
+            messagesContainer.insertAdjacentHTML('beforeend', botIntroHTML);
+            lucide.createIcons();
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        };
+
+        function getWelcomeMessage(lang) {
+            const welcomeMessages = {
+                'english': 'Great! How can I help you find your dream property today?',
+                'tamil': 'சிறப்பு! உங்கள் கனவு இல்லத்தைக் கண்டறிய நான் உங்களுக்கு எவ்வாறு உதவ முடியும்?',
+                'telugu': 'గొప్పది! మీ కలల ఆస్తిని కనుగొనడంలో నేను మీకు ఎలా సహాయం చేయగలను?',
+                'kannada': 'ಅದ್ಭುತ! ನಿಮ್ಮ ಕನಸಿನ ಆಸ್ತಿಯನ್ನು ಹುಡುಕಲು ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?',
+                'malayalam': 'മികച്ചത്! നിങ്ങളുടെ സ്വപ്ന ഭവനം കണ്ടെത്താൻ എനിക്ക് എങ്ങനെ സഹായിക്കാനാകും?'
+            };
+            return welcomeMessages[lang] || welcomeMessages['english'];
+        }
+
+
+        const toggleChat = () => {
+            chatWindow.classList.toggle('hidden');
+            if (!chatWindow.classList.contains('hidden')) {
+                chatInput.focus();
+            }
+        };
+
+        toggleBtn.addEventListener('click', toggleChat);
+        closeBtn.addEventListener('click', toggleChat);
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // 1. Add User Message
+            const userMsgHTML = `
+                <div class="flex items-start gap-2.5 max-w-[85%] self-end flex-row-reverse animate-in fade-in slide-in-from-bottom-2">
+                    <div class="bg-[#0f172a] text-white p-3 rounded-2xl rounded-tr-none shadow-sm font-medium">
+                        ${text}
+                    </div>
+                </div>
+            `;
+            messagesContainer.insertAdjacentHTML('beforeend', userMsgHTML);
+            chatInput.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // 2. Add Typing Indicator
+            const typingID = 'typing-' + Date.now();
+            const typingHTML = `
+                <div id="${typingID}" class="flex items-start gap-2.5 max-w-[85%] animate-in fade-in">
+                    <div class="w-7 h-7 rounded-full bg-[#008b9c] flex items-center justify-center shrink-0 mt-1">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div class="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none shadow-sm text-gray-500 flex items-center gap-1 font-medium text-xs">
+                        Agam is thinking<span class="animate-bounce">.</span><span class="animate-bounce" style="animation-delay: 0.1s">.</span><span class="animate-bounce" style="animation-delay: 0.2s">.</span>
+                    </div>
+                </div>
+            `;
+            messagesContainer.insertAdjacentHTML('beforeend', typingHTML);
+            lucide.createIcons();
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // 3. Actual AI Response from Backend
+            try {
+                const data = await sendChatMessage(text, selectedLanguage);
+                document.getElementById(typingID).remove();
+
+
+                const botMsgHTML = `
+                    <div class="flex items-start gap-2.5 max-w-[85%] animate-in fade-in slide-in-from-bottom-2">
+                        <div class="w-7 h-7 rounded-full bg-[#008b9c] flex items-center justify-center shrink-0 mt-1">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div class="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none shadow-sm text-gray-700 font-medium leading-relaxed">
+                            ${data.reply}
+                        </div>
+                    </div>
+                `;
+                messagesContainer.insertAdjacentHTML('beforeend', botMsgHTML);
+                lucide.createIcons();
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            } catch (err) {
+                console.error("Chat failed:", err);
+                document.getElementById(typingID).remove();
+                const errorMsgHTML = `
+                    <div class="flex items-start gap-2.5 max-w-[85%] animate-in fade-in">
+                        <div class="bg-red-50 border border-red-100 p-3 rounded-2xl text-red-600 font-medium text-xs">
+                            Sorry, I'm having trouble connecting right now.
+                        </div>
+                    </div>
+                `;
+                messagesContainer.insertAdjacentHTML('beforeend', errorMsgHTML);
+            }
+
+        });
+    </script>
+</body>
+
+</html>

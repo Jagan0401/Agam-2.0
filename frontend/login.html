@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-slate-900 overflow-hidden">
+
+    <div class="flex min-h-screen w-full relative">
+        <a href="index.html"
+            class="absolute top-8 left-8 z-20 flex items-center gap-2 text-gray-500 hover:text-[#008b9c] transition-colors font-medium">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Home
+        </a>
+
+        <div
+            class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] z-0">
+        </div>
+
+        <div class="hidden lg:flex flex-col justify-center w-1/2 p-20 z-10">
+            <div class="mb-12">
+                <h1 class="text-4xl font-extrabold tracking-tight mb-1">
+                    Agam<span class="text-[#008b9c]">.</span>
+                </h1>
+                <p class="text-xs text-gray-400 font-bold tracking-widest uppercase">by DevÉlan.</p>
+            </div>
+
+            <h2 class="text-5xl font-extrabold leading-tight mb-6">
+                Synchronizing Spaces,<br />Buyers, and Sellers.
+            </h2>
+            <p class="text-lg text-gray-500 mb-10 max-w-md">
+                The AI-powered property orchestration platform for automated room detection, quality scoring, and
+                intelligent market mapping.
+            </p>
+
+            <ul class="space-y-5 font-medium text-slate-700">
+                <li class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-[#008b9c]"></div>
+                    AI Room & Feature Detection (Pooja, Balcony)
+                </li>
+                <li class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-[#008b9c]"></div>
+                    Smart Clutter & Blur Scoring
+                </li>
+                <li class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-[#008b9c]"></div>
+                    Automated "Hero Image" Selection
+                </li>
+                <li class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-[#008b9c]"></div>
+                    Indian Market Search Intent Matching
+                </li>
+            </ul>
+        </div>
+
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8 z-10">
+            <div
+                class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-10 w-full max-w-md border border-gray-100 relative">
+
+                <div class="text-center mb-8">
+                    <h3 id="formTitle" class="text-2xl font-bold mb-2">Welcome Back</h3>
+                    <p id="formSubtitle" class="text-sm text-gray-500">Login to your Agam workspace</p>
+                </div>
+
+                <div id="errorBox"
+                    class="hidden mb-4 p-3 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-medium text-center">
+                </div>
+
+                <form id="authForm" class="space-y-5">
+
+                    <div id="usernameField" class="hidden">
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Username</label>
+                        <input id="usernameInput" type="text" placeholder="e.g. john_doe"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#008b9c] focus:ring-1 focus:ring-[#008b9c] transition-all bg-gray-50/50 text-sm font-medium" />
+                    </div>
+
+                    <div>
+                        <label id="identityLabel" class="block text-xs font-bold text-gray-700 mb-1.5">Email or
+                            Username</label>
+                        <input id="identityInput" type="text" placeholder="demo@agam.in or username"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#008b9c] focus:ring-1 focus:ring-[#008b9c] transition-all bg-gray-50/50 text-sm font-medium"
+                            required />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Password</label>
+                        <div class="relative">
+                            <input id="passwordInput" type="password" placeholder="••••••••"
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#008b9c] focus:ring-1 focus:ring-[#008b9c] transition-all bg-gray-50/50 text-sm font-medium"
+                                required />
+                            <button type="button" id="togglePassword"
+                                class="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                <i data-lucide="eye" id="eyeIcon" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="roleField" class="hidden">
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Select Role</label>
+                        <select id="roleSelect"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:outline-none focus:border-[#008b9c] text-sm font-medium text-gray-700 transition-all appearance-none cursor-pointer">
+                            <option value="buyer">Property Buyer</option>
+                            <option value="seller">Seller / Agent</option>
+                            <option value="admin">Platform Admin</option>
+                        </select>
+                    </div>
+
+                    <button id="submitBtn" type="submit"
+                        class="w-full bg-[#008b9c] text-white font-bold py-3.5 rounded-xl hover:bg-[#007483] transition-colors mt-2 shadow-md shadow-teal-500/20 disabled:opacity-70">
+                        Login to Agam
+                    </button>
+
+                    <div class="border-t border-gray-100 pt-6 mt-6 text-center">
+                        <p id="togglePromptText" class="text-xs font-semibold text-gray-500 mb-4">New to the platform?
+                        </p>
+                        <button id="toggleModeBtn" type="button"
+                            class="px-6 py-2 bg-slate-50 border border-gray-200 text-slate-700 text-sm font-bold rounded-full hover:bg-slate-100 transition-colors">
+                            Create an Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import API client -->
+    <script src="js/api.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // Mode Toggling (Login vs Register)
+        let isLoginMode = true;
+        const formTitle = document.getElementById('formTitle');
+        const formSubtitle = document.getElementById('formSubtitle');
+        const identityLabel = document.getElementById('identityLabel');
+        const identityInput = document.getElementById('identityInput');
+        const usernameField = document.getElementById('usernameField');
+        const usernameInput = document.getElementById('usernameInput');
+        const roleField = document.getElementById('roleField');
+        const roleSelect = document.getElementById('roleSelect');
+        const submitBtn = document.getElementById('submitBtn');
+        const togglePromptText = document.getElementById('togglePromptText');
+        const toggleModeBtn = document.getElementById('toggleModeBtn');
+        const errorBox = document.getElementById('errorBox');
+
+        toggleModeBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            errorBox.classList.add('hidden');
+
+            if (isLoginMode) {
+                formTitle.textContent = "Welcome Back";
+                formSubtitle.textContent = "Login to your Agam workspace";
+                identityLabel.textContent = "Email or Username";
+                identityInput.placeholder = "demo@agam.in or username";
+                identityInput.type = "text";
+                usernameField.classList.add('hidden');
+                usernameInput.removeAttribute('required');
+                roleField.classList.add('hidden');
+                submitBtn.textContent = "Login to Agam";
+                togglePromptText.textContent = "New to the platform?";
+                toggleModeBtn.textContent = "Create an Account";
+            } else {
+                formTitle.textContent = "Create Account";
+                formSubtitle.textContent = "Join the Agam platform";
+                identityLabel.textContent = "Email Address";
+                identityInput.placeholder = "you@example.com";
+                identityInput.type = "email";
+                usernameField.classList.remove('hidden');
+                usernameInput.setAttribute('required', 'true');
+                roleField.classList.remove('hidden');
+                submitBtn.textContent = "Register Account";
+                togglePromptText.textContent = "Already have an account?";
+                toggleModeBtn.textContent = "Sign In Instead";
+            }
+        });
+
+        // Toggle Password Visibility
+        const toggleBtn = document.getElementById('togglePassword');
+        const passInput = document.getElementById('passwordInput');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        toggleBtn.addEventListener('click', () => {
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passInput.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        });
+
+        // Form Submission
+        const authForm = document.getElementById('authForm');
+
+        function showError(msg) {
+            errorBox.textContent = msg;
+            errorBox.classList.remove('hidden');
+            submitBtn.disabled = false;
+        }
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorBox.classList.add('hidden');
+            submitBtn.disabled = true;
+
+            try {
+                if (isLoginMode) {
+                    const data = await login(identityInput.value.trim(), passInput.value);
+                    setAuth(data.access_token, data.role);
+                    redirectUser(data.role);
+                } else {
+                    const userData = {
+                        username: usernameInput.value.trim(),
+                        email: identityInput.value.trim(),
+                        password: passInput.value,
+                        role: roleSelect.value
+                    };
+                    const data = await register(userData);
+                    setAuth(data.access_token, data.role);
+                    redirectUser(data.role);
+                }
+            } catch (err) {
+                showError(err.message);
+            }
+        });
+
+        function redirectUser(role) {
+            if (role === 'seller') {
+                window.location.href = 'seller-dashboard.html';
+                return; // Stop execution
+            } else if (role === 'admin') {
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                window.location.href = 'buyer.html';
+            }
+        }
+    </script>
+</body>
+
+</html>
