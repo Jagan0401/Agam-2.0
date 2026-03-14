@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.env
+
+# Database
+*.db
+*.sqlite3
+
+# Uploads
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+verify_pipeline.py
+test_quality.jpg
+dummy_test.jpg
+automation/outputs/
+automation/data/
+automation/src/__pycache__/
