@@ -195,6 +195,12 @@
             } catch (err) {
                 console.error("Dashboard init failed:", err);
                 if (err.message === "Session expired") logout();
+                
+                // Hide loading placeholders and show error
+                const tableBody = document.getElementById('listingsTableBody');
+                if (tableBody) tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400 font-medium">Failed to load properties. Check your connection.</td></tr>`;
+                
+                document.querySelectorAll('.stat-val').forEach(el => el.textContent = "Error");
             }
         }
 

@@ -6,6 +6,10 @@ import os
 from app.routes import upload_routes, search_routes, property_routes, auth_routes, chat_routes, admin_routes
 from app.database import engine, Base
 from app.models import user, property # ensure models are imported before creating tables
+from app.db_sync import sync_database_schema
+
+# Run schema sync to add missing columns to agam.db
+sync_database_schema()
 
 # Create tables
 Base.metadata.create_all(bind=engine)

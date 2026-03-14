@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,30 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .filter-btn.active {
+            background-color: #008b9c;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 139, 156, 0.2);
+        }
     </style>
 </head>
-<body class="bg-[#fafafa] text-slate-900 pb-20">
+
+<body class="bg-[#fafafa] text-slate-900">
 
     <nav class="bg-white border-b border-gray-100 px-8 py-4 sticky top-0 z-30">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
@@ -19,156 +39,229 @@
                 Agam<span class="text-[#008b9c]">.</span>
             </a>
             <div class="flex items-center gap-6">
-                <a href="buyer.html" class="text-sm font-semibold text-gray-500 hover:text-[#008b9c] flex items-center gap-2 transition-colors">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Search
-                </a>
-                <button onclick="logout()" class="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-red-600 transition-colors">
-                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
-                </button>
+                <a href="buyer.html"
+                    class="text-sm font-bold text-gray-500 hover:text-[#008b9c] transition-colors">Search Properties</a>
+                <div
+                    class="w-8 h-8 rounded-full bg-[#008b9c] text-white flex items-center justify-center font-bold text-sm">
+                    J</div>
             </div>
-
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto px-8 py-8" id="propertyContent">
-        <!-- Content will be injected by JavaScript -->
-        <div class="flex items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#008b9c]"></div>
+    <main class="max-w-7xl mx-auto px-8 py-12">
+        <div id="property-container">
+            <!-- Shimmer Loading -->
+            <div class="animate-pulse space-y-8">
+                <div class="h-10 bg-gray-200 rounded-xl w-1/3"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="h-[400px] bg-gray-200 rounded-[2.5rem]"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="h-[190px] bg-gray-200 rounded-[1.5rem]"></div>
+                        <div class="h-[190px] bg-gray-200 rounded-[1.5rem]"></div>
+                        <div class="h-[190px] bg-gray-200 rounded-[1.5rem]"></div>
+                        <div class="h-[190px] bg-gray-200 rounded-[1.5rem]"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
 
     <script src="js/api.js"></script>
     <script>
-        lucide.createIcons();
+        let currentProperty = null;
 
         async function initProperty() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const propertyId = urlParams.get('id');
-            const container = document.getElementById('propertyContent');
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const container = document.getElementById('property-container');
 
-            if (!propertyId) {
-                container.innerHTML = `<div class="text-center py-20"><h2 class="text-2xl font-bold text-gray-400">Property Not Found</h2><a href="buyer.html" class="text-[#008b9c] font-bold mt-4 block">Return to Search</a></div>`;
+            if (!id) {
+                container.innerHTML = `<div class="text-center py-20 font-bold text-gray-400">Property not found.</div>`;
                 return;
             }
 
             try {
-                // Fetch real property details from backend
-                const response = await fetch(`http://localhost:8000/properties/` + propertyId);
-                const p = await response.json();
+                const p = await getPropertyById(id);
+                currentProperty = p;
 
-                if (!p || p.detail) throw new Error("Property not found");
-
-                const detectionsHTML = (p.detections || []).map(d => 
-                    `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                        <span class="text-sm font-bold text-gray-700 capitalize">${d.label}</span>
-                        <span class="text-[10px] font-extrabold text-[#008b9c] bg-teal-50 px-2 py-0.5 rounded">${(d.confidence * 100).toFixed(0)}% Match</span>
-                    </div>`
-                ).join('') || `<p class="text-gray-400 text-xs italic">No objects detected yet.</p>`;
-
-                const tagsHTML = (p.tags || []).map(t => 
-                    `<div class="flex items-center gap-3 text-sm font-semibold text-gray-700"><div class="w-2 h-2 rounded-full bg-[#008b9c]"></div>${t}</div>`
-                ).join('');
-
-                container.innerHTML = `
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="bg-teal-50 text-[#008b9c] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-teal-100 uppercase tracking-wide">
-                                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> ${p.ai_verified ? 'Agam AI Verified' : 'AI Analysis Pending'}
-                            </span>
-                            <span class="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full">ID: ${p.property_id || 'PRO-' + p.id}</span>
-                        </div>
-                        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">${p.title}</h1>
-                        <p class="text-gray-500 flex items-center gap-1.5 font-medium">
-                            <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i> ${p.location}
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-4xl font-extrabold text-[#008b9c] mb-1">${p.price}</div>
-                        <p class="text-sm font-bold text-gray-500">₹${p.sqft ? Math.round(parseInt(p.price.replace(/[^0-9.]/g, '')) * 100000 / parseInt(p.sqft.replace(/,/g, ''))) : '0'} / sqft</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-8">
-                    <div class="flex items-center gap-8 px-4 divide-x divide-gray-100">
-                        <div class="pr-8">
-                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Layout</p>
-                            <p class="font-bold text-lg">${p.bhk}</p>
-                        </div>
-                        <div class="px-8">
-                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Super Area</p>
-                            <p class="font-bold text-lg">${p.sqft} sqft</p>
-                        </div>
-                        <div class="pl-8">
-                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Furnishing</p>
-                            <p class="font-bold text-lg">${p.furnishing}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm mb-8">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 class="text-xl font-bold flex items-center gap-2">
-                                <i data-lucide="sparkles" class="w-5 h-5 text-[#008b9c]"></i> Property Insights
-                            </h2>
-                            <p class="text-sm text-gray-500 mt-1">AI-detected room: <span class="font-bold text-gray-700 uppercase">${(p.room_type || 'unclassified').replace('_', ' ')}</span></p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                        <div class="md:col-span-8 relative rounded-2xl overflow-hidden group bg-gray-100 border border-gray-100">
-                            <img src="${p.image}" alt="${p.title}" class="w-full h-[500px] object-cover" />
-                            ${p.quality_score ? `<div class="absolute bottom-4 left-4 bg-white/95 backdrop-blur px-3 py-2 rounded-xl border border-gray-100 shadow-lg"><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">AI Quality Score</p><p class="text-2xl font-black text-[#008b9c]">${p.quality_score.toFixed(1)}<span class="text-xs text-gray-300 font-bold ml-1">/ 10</span></p></div>` : ''}
-                        </div>
-                        
-                        <div class="md:col-span-4 space-y-6">
-                            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                                <h4 class="text-xs font-black text-[#008b9c] uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <i data-lucide="scan" class="w-3 h-3"></i> YOLO Object Detection
-                                </h4>
-                                <div class="space-y-3">
-                                    ${detectionsHTML}
-                                </div>
-                            </div>
-                            
-                            <div class="bg-teal-50/30 p-6 rounded-2xl border border-teal-100/50">
-                                <h4 class="text-xs font-black text-[#008b9c] uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <i data-lucide="tags" class="w-3 h-3"></i> AI Semantic Tags
-                                </h4>
-                                <div class="flex flex-wrap gap-2">
-                                    ${(p.tags || []).map(t => `<span class="bg-white border border-teal-100 text-[#008b9c] px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">${t}</span>`).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex flex-col lg:flex-row gap-8">
-                    <div class="flex-1 space-y-8">
-                        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-                            <h3 class="text-xl font-bold mb-4">Property Description</h3>
-                            <p class="text-gray-600 leading-relaxed text-sm font-medium">This property has been verified by Agam AI. The room has been classified as a <b>${p.room_type || 'specified room'}</b> with a quality confidence of <b>${p.quality_score ? p.quality_score.toFixed(1) : 'N/A'}/10</b>. Our AI models identified key features like <b>${(p.tags || []).slice(0, 3).join(', ') || 'essential amenities'}</b>.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="w-full lg:w-96 shrink-0">
-                        <div class="bg-[#0f172a] p-8 rounded-3xl text-white shadow-xl sticky top-28">
-                            <h3 class="font-bold text-xl mb-6">Interested?</h3>
-                            <button onclick="alert('Contacting Seller...')" class="w-full bg-[#008b9c] text-white py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 hover:bg-[#007483] transition-all shadow-lg shadow-teal-500/20 mb-4">Book a Site Visit</button>
-                            <button class="w-full bg-slate-800 text-gray-300 py-4 rounded-2xl font-bold border border-slate-700 hover:bg-slate-700 transition-colors">Chat with Agent</button>
-                        </div>
-                    </div>
-                </div>
-                `;
-                lucide.createIcons();
+                renderPage(p);
             } catch (err) {
                 container.innerHTML = `<div class="text-center py-20 text-red-500 font-bold">Error loading property: ${err.message}</div>`;
             }
         }
 
+        function renderGallery(imgs, heroUrl) {
+            // Filter out hero image from smaller thumbnails to ensure uniqueness
+            const others = imgs.filter(img => img.url !== heroUrl).slice(0, 4);
+
+            return `
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
+                <!-- Large Hero Section -->
+                <div class="lg:col-span-7">
+                    <div class="relative rounded-[2.5rem] overflow-hidden bg-gray-100 aspect-[4/3] shadow-sm border border-gray-100 group">
+                        <img src="${heroUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <div class="absolute top-6 left-6 bg-white/95 backdrop-blur px-4 py-2 rounded-2xl border border-gray-100 shadow-xl flex items-center gap-2">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-[#008b9c]"></i>
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">AI Selected Cover</span>
+                        </div>
+                        <div class="absolute top-6 right-6 bg-white/95 backdrop-blur px-3 py-1.5 rounded-xl border border-gray-100 shadow-lg">
+                            <p class="text-xl font-black text-[#008b9c]">${currentProperty.quality_score.toFixed(1)}<span class="text-[10px] text-gray-300 ml-0.5">/10</span></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Small Thumbnails Grid -->
+                <div class="lg:col-span-5 grid grid-cols-2 gap-4">
+                    ${others.map(img => `
+                        <div class="relative rounded-[2rem] overflow-hidden bg-gray-100 aspect-square border border-gray-100 shadow-sm group cursor-pointer" onclick="window.open('${img.url}', '_blank')">
+                            <img src="${img.url}" class="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                            <div class="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-[9px] font-black text-white uppercase tracking-widest border border-white/10">
+                                ${(img.room || 'Other').replace('_', ' ')}
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${others.length < 4 ? Array(4 - others.length).fill(0).map(() => `
+                        <div class="rounded-[2rem] bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center text-gray-300">
+                            <i data-lucide="image" class="w-8 h-8"></i>
+                        </div>
+                    `).join('') : ''}
+                </div>
+            </div>`;
+        }
+
+        function renderPage(p) {
+            const container = document.getElementById('property-container');
+
+            // Group gallery images by room type for filters
+            const rooms = {};
+            (p.gallery || []).forEach(img => {
+                const r = img.room || 'Other';
+                if (!rooms[r]) rooms[r] = [];
+                rooms[r].push(img);
+            });
+
+            const marketFeatures = (p.tags || []).slice(0, 5);
+
+            container.innerHTML = `
+            <!-- AI Tour Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+                <div>
+                    <h1 class="text-3xl font-black tracking-tight flex items-center gap-3">
+                        <i data-lucide="sparkles" class="w-7 h-7 text-[#008b9c]"></i> AI Organized Tour
+                    </h1>
+                    <p class="text-gray-500 font-medium mt-1">Photos automatically categorized and scored for quality.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 overflow-x-auto pb-2 no-scrollbar bg-white p-1.5 rounded-2xl border border-gray-100">
+                    <button onclick="filterGallery('All')" class="filter-btn active px-6 py-2.5 rounded-xl text-xs font-bold transition-all" data-room="All">All</button>
+                    ${Object.keys(rooms).map(room => `
+                        <button onclick="filterGallery('${room}')" class="filter-btn px-6 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition-all capitalize" data-room="${room}">
+                            ${room.replace('_', ' ')}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div id="gallery-container">
+                ${renderGallery(p.gallery || [], p.image)}
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12">
+                <div class="lg:col-span-8 space-y-8">
+                    <!-- About Section -->
+                    <div class="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                        <h2 class="text-2xl font-black mb-6">About this Property</h2>
+                        <p class="text-gray-600 leading-relaxed font-medium">
+                            This premium property in <b>${p.location}</b> offers a unique living experience verified by Agam AI. 
+                            Featuring high-quality spaces professionally categorized to ensure you see the home exactly as it is. 
+                            Perfect for those looking for a modern, high-quality residence in a well-established neighborhood.
+                        </p>
+                    </div>
+
+                    <!-- Market Features -->
+                    <div class="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                        <h2 class="text-2xl font-black mb-8 italic">Market Features</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
+                            ${marketFeatures.length > 0 ? marketFeatures.map(f => `
+                                <div class="flex items-center gap-4 py-2 border-b border-gray-50">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-[#008b9c]"></div>
+                                    <span class="font-bold text-gray-700 capitalize">${f}</span>
+                                </div>
+                            `).join('') : `
+                                <div class="col-span-2 py-4 text-gray-400 font-medium italic">General residential features detected.</div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4">
+                    <!-- Contact Seller Sidebar -->
+                    <div class="sticky top-32 space-y-6">
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                            <h2 class="text-xl font-black mb-8">Contact Seller</h2>
+                            <div class="flex items-center gap-4 mb-8 p-4 bg-gray-50 rounded-3xl">
+                                <div class="w-14 h-14 bg-[#008b9c] rounded-2xl flex items-center justify-center text-white font-black text-xl">S</div>
+                                <div>
+                                    <p class="font-black text-gray-900 text-lg">Suresh Kumar</p>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prime Space Realty</p>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <button onclick="alert('Phone: +91 98765 43210')" class="w-full bg-[#008b9c] text-white py-4 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-[#007483] transition-all shadow-xl shadow-teal-500/10">
+                                    <i data-lucide="phone" class="w-5 h-5"></i> View Phone Number
+                                </button>
+                                <button onclick="alert('Messenger opened!')" class="w-full bg-white text-[#008b9c] py-4 rounded-2xl font-black border-2 border-[#008b9c] flex items-center justify-center gap-3 hover:bg-teal-50 transition-all">
+                                    <i data-lucide="mail" class="w-5 h-5"></i> Send Message
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Report Option -->
+                        <button onclick="handleReport(${p.id})" class="w-full group bg-white/50 hover:bg-red-50 border border-gray-100 py-4 rounded-2xl text-gray-400 hover:text-red-500 flex items-center justify-center gap-3 transition-all">
+                            <i data-lucide="flag" class="w-4 h-4 text-gray-300 group-hover:text-red-400"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Report this Listing</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+
+            lucide.createIcons();
+        }
+
+        window.filterGallery = (room) => {
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(b => {
+                if (b.dataset.room === room) {
+                    b.classList.add('active');
+                    b.classList.remove('text-gray-500', 'hover:bg-gray-50');
+                } else {
+                    b.classList.remove('active');
+                    b.classList.add('text-gray-500', 'hover:bg-gray-50');
+                }
+            });
+
+            // For the filtered view, if "All" is selected, use the original cover as hero.
+            // If a specific room is selected, we take the FIRST image of that room as hero, and the rest as thumbnails.
+            const filteredImgs = room === 'All' ? currentProperty.gallery : currentProperty.gallery.filter(img => img.room === room);
+
+            const heroUrl = filteredImgs.length > 0 ? filteredImgs[0].url : currentProperty.image;
+
+            document.getElementById('gallery-container').innerHTML = renderGallery(currentProperty.gallery, heroUrl);
+            lucide.createIcons();
+        };
+
+        async function handleReport(id) {
+            if (confirm("Are you sure you want to report this listing for review?")) {
+                try {
+                    await reportProperty(id);
+                    alert("Thank you for your report. Our AI and moderation team will review it shortly.");
+                } catch (err) {
+                    alert("Report failed: " + err.message);
+                }
+            }
+        }
+
         initProperty();
     </script>
-
 </body>
+
 </html>

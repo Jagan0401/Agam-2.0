@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime
+from sqlalchemy.sql import func
 from app.database import Base
 
 class Property(Base):
@@ -22,4 +23,8 @@ class Property(Base):
     ai_verified = Column(Boolean, default=True)
     moderation_status = Column(String, default="approved") # approved, pending, flagged, rejected
     moderation_reason = Column(String, default="")
+    report_count = Column(Integer, default=0)
+    gallery = Column(String, default="[]") # Store gallery images as a JSON string
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    processed_at = Column(DateTime(timezone=True), onupdate=func.now())
 

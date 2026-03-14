@@ -23,6 +23,7 @@ def parse_property(p):
         "room_type": p.room_type,
         "ai_verified": p.ai_verified,
         "tags": json.loads(p.tags) if p.tags else [],
+        "gallery": json.loads(p.gallery) if p.gallery else [],
         "detections": json.loads(p.detections) if p.detections else [],
         "raw_quality": json.loads(p.raw_quality) if p.raw_quality else {}
     }
@@ -49,6 +50,7 @@ class PropertyCreate(BaseModel):
     quality_score: float
     room_type: str
     tags: List[str] = []
+    gallery: List[dict] = []
 
 @router.post("/")
 def create_property(prop_in: PropertyCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -66,6 +68,7 @@ def create_property(prop_in: PropertyCreate, db: Session = Depends(get_db), curr
         quality_score=prop_in.quality_score,
         room_type=prop_in.room_type,
         tags=json.dumps(prop_in.tags),
+        gallery=json.dumps(prop_in.gallery),
         detections=json.dumps(prop_in.tags), # Save detections for insight engine later
         ai_verified=True
     )
@@ -89,3 +92,17 @@ def get_property(property_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Property not found")
     return parse_property(prop)
 
+@router.post("/{prop_id}/report")
+def report_property(prop_id: int, db: Session = Depends(get_db)):
+    """Report a property for moderation."""
+    prop = db.query(Property).filter(Property.id == prop_id).first()
+    if not prop:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    prop.report_count += 1
+    if prop.report_count >= 1: # Flag immediately for now
+        prop.moderation_status = "flagged"
+        prop.moderation_reason = f"Reported by {prop.report_count} user(s)"
+    
+    db.commit()
+    return {"status": "success", "report_count": prop.report_count}

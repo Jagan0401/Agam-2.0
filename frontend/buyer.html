@@ -65,20 +65,12 @@
             </div>
             <div class="space-y-6">
                 <div>
-                    <h3 class="text-sm font-bold text-gray-800 mb-3">BHK Type</h3>
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Room Type</h3>
                     <div class="flex flex-wrap gap-2">
-                        <button
-                            class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors"
-                            data-bhk="1">1 BHK</button>
-                        <button
-                            class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors"
-                            data-bhk="2">2 BHK</button>
-                        <button
-                            class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors"
-                            data-bhk="3">3 BHK</button>
-                        <button
-                            class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors"
-                            data-bhk="4">4+ BHK</button>
+                        <button class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors" data-type="Living Room">Living Room</button>
+                        <button class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors" data-type="Kitchen">Kitchen</button>
+                        <button class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors" data-type="Bedroom">Bedroom</button>
+                        <button class="bhk-btn px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-[#008b9c] hover:text-[#008b9c] transition-colors" data-type="Other">Other</button>
                     </div>
                 </div>
                 <div>
@@ -303,13 +295,6 @@
                     <p class="text-sm text-gray-500 flex items-center gap-1.5 mb-4">
                         <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-400"></i> ${p.location}
                     </p>
-                    <div class="flex items-center gap-3 text-xs font-semibold text-gray-600 mb-4 border-y border-gray-100 py-3">
-                        <span>${p.bhk}</span>
-                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                        <span>${p.sqft} sqft</span>
-                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                        <span>${p.furnishing}</span>
-                    </div>
                     <div class="flex flex-wrap gap-2">${tags}</div>
                 </div>
             </div>`;
@@ -339,10 +324,7 @@
             let filtered = allResults;
 
             if (activeBhk) {
-                filtered = filtered.filter(p => {
-                    const n = parseInt(p.bhk);
-                    return activeBhk === 4 ? n >= 4 : n === activeBhk;
-                });
+                filtered = filtered.filter(p => (p.room_type || '').toLowerCase().includes(activeBhk.toLowerCase()));
             }
             if (features.length) {
                 filtered = filtered.filter(p => features.every(f => (p.tags || []).includes(f)));
@@ -370,7 +352,7 @@
 
         document.querySelectorAll('.bhk-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const val = parseInt(btn.dataset.bhk);
+                const val = btn.dataset.type;
                 if (activeBhk === val) {
                     activeBhk = null;
                     btn.classList.remove('border-[#008b9c]', 'bg-teal-50', 'text-[#008b9c]');

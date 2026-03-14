@@ -44,21 +44,21 @@
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Pending AI Review</p>
-                        <h3 class="text-3xl font-extrabold text-gray-900">42</h3>
+                        <h3 id="pendingAI" class="text-3xl font-extrabold text-gray-900">...</h3>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center"><i data-lucide="clock" class="w-6 h-6"></i></div>
                 </div>
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">User Reports</p>
-                        <h3 class="text-3xl font-extrabold text-gray-900">12</h3>
+                        <h3 id="userReports" class="text-3xl font-extrabold text-gray-900">...</h3>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center"><i data-lucide="flag" class="w-6 h-6"></i></div>
                 </div>
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Processed Today</p>
-                        <h3 id="pendingCount" class="text-3xl font-extrabold text-gray-900">...</h3>
+                        <h3 id="processedToday" class="text-3xl font-extrabold text-gray-900">...</h3>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-green-50 text-green-500 flex items-center justify-center"><i data-lucide="check-check" class="w-6 h-6"></i></div>
                 </div>
@@ -98,10 +98,13 @@
         async function initModeration() {
             await loadProfile();
             try {
+                // Fetch stats for the top cards
+                const stats = await getAdminStats();
+                document.getElementById('pendingAI').textContent = stats.pending_ai_review;
+                document.getElementById('userReports').textContent = stats.user_reports;
+                document.getElementById('processedToday').textContent = stats.processed_today;
+
                 const queue = await getModerationQueue();
-                
-                // Update stats
-                document.getElementById('pendingCount').textContent = queue.length;
                 
                 const tbody = document.getElementById('moderationQueue');
                 tbody.innerHTML = '';
@@ -141,6 +144,8 @@
                 }
             } catch (err) {
                 console.error("Moderation load failed:", err);
+                document.querySelectorAll('.text-3xl').forEach(el => el.textContent = "Error");
+                document.getElementById('moderationQueue').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500 font-medium font-bold">Failed to load moderation queue. Database error detected.</td></tr>`;
             }
         }
 

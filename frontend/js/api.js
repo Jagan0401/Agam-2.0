@@ -262,3 +262,26 @@ async function processModeration(propId, action) {
     if (!response.ok) throw new Error("Failed to process moderation");
     return response.json();
 }
+
+async function getAdminAnalytics() {
+    const response = await fetch(`${BASE_URL}/admin/analytics`, {
+        headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error("Failed to fetch analytics");
+    return response.json();
+}
+
+async function reportProperty(propId) {
+    const response = await fetch(`${BASE_URL}/properties/${propId}/report`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error("Failed to report property");
+    return response.json();
+}
+
+async function getPropertyById(propId) {
+    const response = await fetch(`${BASE_URL}/properties/${propId}`);
+    if (!response.ok) throw new Error("Property not found");
+    return response.json();
+}

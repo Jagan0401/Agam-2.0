@@ -119,6 +119,7 @@
                 lucide.createIcons();
             } catch (err) {
                 console.error("Failed to load users:", err);
+                document.getElementById('userList').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400 font-medium">Failed to load user list. Database is syncing, try again in a moment.</td></tr>`;
             }
         }
 

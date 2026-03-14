@@ -240,6 +240,9 @@
                     (parseFloat(prev.analysis.quality_score || 0) > parseFloat(current.analysis.quality_score || 0)) ? prev : current
                 );
 
+                // Aggregated tags from all images
+                const allTags = [...new Set(analysisResults.flatMap(r => r.analysis.tags || []))];
+
                 const propertyData = {
                     title: propTitle,
                     location: propLocation,
@@ -247,7 +250,13 @@
                     image: best.image_url,
                     quality_score: parseFloat(best.analysis.quality_score || best.analysis.quality || 0),
                     room_type: best.analysis.room_type || best.analysis.room || 'unknown',
-                    tags: best.analysis.tags || []
+                    tags: allTags,
+                    gallery: analysisResults.map(r => ({
+                        url: r.image_url,
+                        room: r.analysis.room_type || r.analysis.room || 'unknown',
+                        quality: parseFloat(r.analysis.quality_score || r.analysis.quality || 0),
+                        tags: r.analysis.tags || []
+                    }))
                 };
 
                 await createProperty(propertyData);

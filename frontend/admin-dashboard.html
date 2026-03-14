@@ -123,6 +123,8 @@
                 }
             } catch (err) {
                 console.error("Dashboard init failed:", err);
+                document.querySelectorAll('.text-3xl').forEach(el => el.textContent = "Error");
+                document.getElementById('moderationList').innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-400 font-medium">Failed to load. Database sync in progress? Try refreshing.</td></tr>`;
             }
         }
 

@@ -52,6 +52,12 @@ ROOM_SPECIFIC_PROMPTS = [
     "a stylish balcony",
     "a balcony with open view",
 
+    "vastu compliant interior",
+    "a pooja room",
+    "a traditional prayer hall",
+    "covered parking area",
+    "gated community entrance",
+
     "a modern house exterior",
     "a luxury house exterior",
 ]
