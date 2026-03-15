@@ -15,25 +15,27 @@ def search(
     """
     Search properties by keyword, type, or AI-semantic context.
     """
-    if semantic and q:
-        from app.services.search_service import search_properties_semantic
-        # Semantic search gives us IDs or similarity results
-        # In this simple implementation, we'll use keyword search as a base 
-        # but you could rank by semantic similarity here.
-        semantic_results = search_properties_semantic(q)
-        # Note: In a production app, you'd fetch properties based on FAISS IDs
-        # Here we prioritize semantic keyword filtering
-        query = db.query(Property).filter(
-            Property.title.contains(q) | 
-            Property.location.contains(q) |
-            Property.tags.contains(q)
-        )
+    if q:
+        keywords = q.lower().split()
+        from sqlalchemy import or_, and_
+        
+        # Build a filter that requires EVERY keyword to match at least one field
+        keyword_filters = []
+        for kw in keywords:
+            kw_or_filter = or_(
+                Property.title.contains(kw),
+                Property.location.contains(kw),
+                Property.tags.contains(kw),
+                Property.room_type.contains(kw)
+            )
+            keyword_filters.append(kw_or_filter)
+            
+        query = db.query(Property).filter(and_(*keyword_filters))
     else:
         query = db.query(Property)
-        if q:
-            query = query.filter(Property.title.contains(q) | Property.location.contains(q))
-        if type:
-            query = query.filter(Property.bhk.contains(type))
+        
+    if type:
+        query = query.filter(Property.bhk.contains(type))
         
     results = query.all()
     

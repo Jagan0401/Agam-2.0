@@ -430,12 +430,14 @@
         async function fetchResults(query) {
             showLoading();
             try {
-                const data = await searchProperties(query);
+                const data = await searchProperties(query, true);
                 allResults = data.results || [];
                 updateLocalityFilterOptions(allResults);
                 const n = allResults.length;
                 resultsTitle.textContent = query ? `Results for "${query}"` : 'AI-Verified Properties';
-                resultsSubtitle.textContent = `${n} listing${n !== 1 ? 's' : ''} found`;
+                resultsSubtitle.textContent = query 
+                    ? `Agam AI found ${n} relevant listing${n !== 1 ? 's' : ''}`
+                    : `${n} listing${n !== 1 ? 's' : ''} found`;
                 applyFilters();
             } catch (e) {
                 console.error("Search failed:", e);
