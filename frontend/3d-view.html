@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Virtual Tour - Agam.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            filter: brightness(1.65) contrast(1.05);
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .ui-element {
+            pointer-events: auto;
+        }
+
+        .room-button.active {
+            background-color: #008b9c;
+            color: white;
+            border-color: #008b9c;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #008b9c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="space-y-6 w-full max-w-md px-6">
+            <div class="flex items-center gap-4 justify-center mb-8">
+                <div class="relative">
+                    <div class="w-12 h-12 bg-teal-500/20 rounded-xl flex items-center justify-center border border-teal-500/50">
+                        <i data-lucide="cpu" class="w-6 h-6 text-teal-400"></i>
+                    </div>
+                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-teal-400 rounded-full animate-ping"></div>
+                </div>
+                <div>
+                    <h2 class="text-white font-black tracking-tight text-xl">AI 3D Conversion</h2>
+                    <p class="text-teal-400/80 text-xs font-bold font-mono tracking-widest uppercase">Generative Panorama Engine</p>
+                </div>
+            </div>
+
+            <!-- Preview Input -->
+            <div class="bg-white/5 border border-white/10 rounded-xl p-3 flex gap-4 items-center mb-4 transition-all" id="inputPreviewBox">
+                <div class="w-16 h-16 bg-slate-800 rounded-lg overflow-hidden shrink-0 border border-white/10">
+                    <img id="aiInputPreview" src="" class="w-full h-full object-cover opacity-50 grayscale transition-all duration-1000">
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs text-white/50 uppercase tracking-widest font-bold mb-1">Input Source</p>
+                    <p id="aiInputName" class="text-sm font-medium text-white truncate">Acquiring 2D image...</p>
+                </div>
+                <div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
+                    <i data-lucide="image" class="w-3 h-3 text-white/50"></i>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <div class="flex justify-between text-xs font-bold uppercase tracking-wider">
+                    <span id="loadingStep" class="text-teal-400">Initializing Engine...</span>
+                    <span id="loadingPercentage" class="text-white">0%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-white/5">
+                    <div id="loadingBar" class="h-full bg-gradient-to-r from-teal-600 to-teal-400 w-0 transition-all duration-300 relative shadow-[0_0_15px_rgba(45,212,191,0.5)]">
+                        <div class="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-2 mt-6">
+                <div class="flex items-center gap-3 text-xs text-white/40 font-mono">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-teal-500/0 transition-all" id="step1Icon"></i>
+                    <span id="step1Text">1. Fetching Property Gallery Metadata</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-white/40 font-mono">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-teal-500/0 transition-all" id="step2Icon"></i>
+                    <span id="step2Text">2. Loading 2D Input Constraints</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-white/40 font-mono">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-teal-500/0 transition-all" id="step3Icon"></i>
+                    <span id="step3Text">3. Applying Generative 360° Outpainting</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-white/40 font-mono">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-teal-500/0 transition-all" id="step4Icon"></i>
+                    <span id="step4Text">4. Stitching Equirectangular Projection</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-overlay p-8 flex flex-col justify-between">
+        <!-- Top Navigation -->
+        <div class="flex items-center justify-between ui-element">
+            <a href="#" id="backBtn" class="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-5 py-2.5 rounded-full flex items-center gap-2 transition-all group">
+                <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                <span class="font-bold text-sm">Back to Property</span>
+            </a>
+            
+            <div class="flex items-center gap-3">
+                <div class="bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full hidden sm:flex items-center gap-3">
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="mouse" class="w-3.5 h-3.5 text-teal-400"></i>
+                        <span class="text-[10px] text-white/70 font-bold uppercase tracking-wider">Drag to Orbit</span>
+                    </div>
+                    <div class="w-px h-3 bg-white/20"></div>
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-3.5 h-3.5 text-teal-400"></i>
+                        <span class="text-[10px] text-white/70 font-bold uppercase tracking-wider">Scroll to Zoom</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="flex flex-col items-center gap-6">
+            <div id="roomControls" class="bg-white/10 backdrop-blur-md border border-white/20 p-2 rounded-2xl flex items-center gap-2 ui-element">
+                <!-- Room buttons will be injected here -->
+            </div>
+
+            <div class="ui-element">
+                <p id="roomTitle" class="text-white text-3xl font-black tracking-tighter uppercase drop-shadow-2xl">Loading Room...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        lucide.createIcons();
+
+        let scene, camera, renderer, sphere;
+        let isUserInteracting = false;
+        let onPointerDownPointerX = 0, onPointerDownPointerY = 0;
+        let lon = 0, onPointerDownLon = 0;
+        let lat = 0, onPointerDownLat = 0;
+        let phi = 0, theta = 0;
+
+        const propertyId = new URLSearchParams(window.location.search).get('id');
+        const container = document.getElementById('canvas-container');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const roomTitle = document.getElementById('roomTitle');
+        const roomControls = document.getElementById('roomControls');
+        const backBtn = document.getElementById('backBtn');
+
+        let propertyData = null;
+
+        // Create a canvas-based fallback texture with gradient
+        function createFallbackTexture(roomLabel) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+
+            // Dark gradient background
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            grad.addColorStop(0, '#0f172a');
+            grad.addColorStop(0.5, '#1e293b');
+            grad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grid lines
+            ctx.strokeStyle = 'rgba(0,139,156,0.15)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 80) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 80) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            // Center text
+            ctx.fillStyle = '#008b9c';
+            ctx.font = 'bold 72px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(roomLabel || 'ROOM', canvas.width / 2, canvas.height / 2 - 40);
+
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = '28px Inter, sans-serif';
+            ctx.fillText('Image not available for 3D preview', canvas.width / 2, canvas.height / 2 + 50);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+
+        async function init() {
+            if (!propertyId) {
+                alert("No property ID provided");
+                window.location.href = 'buyer.html';
+                return;
+            }
+
+            try {
+                // Fetch property and trigger conversion pipeline animation
+                propertyData = await getPropertyById(propertyId);
+                backBtn.href = `property.html?id=${propertyId}`;
+
+                initThreeJS();
+                setupRoomButtons();
+
+                const firstRoomLabel = (propertyData.room_type || 'Main View').replace(/_/g, ' ').toUpperCase();
+                
+                // Show AI conversion sequence
+                await runAIConversionSequence(propertyData.image, firstRoomLabel);
+
+                animate();
+                hideLoading();
+
+            } catch (err) {
+                console.error("Initialization failed:", err);
+                hideLoading();
+                roomTitle.textContent = 'Error loading data';
+            }
+        }
+
+        async function runAIConversionSequence(imageUrl, roomLabel) {
+            return new Promise(async (resolve) => {
+                const previewImg = document.getElementById('aiInputPreview');
+                const previewName = document.getElementById('aiInputName');
+                const loadingBar = document.getElementById('loadingBar');
+                const loadingPct = document.getElementById('loadingPercentage');
+                const loadingStep = document.getElementById('loadingStep');
+                
+                // Setup visual inputs to show the user we are using their images
+                previewImg.src = imageUrl;
+                previewName.textContent = `2D Input: ${roomLabel}`;
+
+                const steps = [
+                    { id: '1', percent: 25, delay: 600, text: 'Mapping Spatial Boundaries...' },
+                    { id: '2', percent: 50, delay: 800, text: 'Executing Generative Outpaint...' },
+                    { id: '3', percent: 75, delay: 900, text: 'Constructing Equirectangular Mesh...' },
+                    { id: '4', percent: 100, delay: 600, text: 'Mounting to WebGL Engine...' }
+                ];
+
+                let currentProgress = 0;
+
+                for (const step of steps) {
+                    await new Promise(r => setTimeout(r, step.delay));
+                    
+                    // Activate styling for input to look "processed"
+                    if(step.id === '2') {
+                        previewImg.classList.remove('grayscale', 'opacity-50');
+                        previewImg.classList.add('scale-110');
+                    }
+
+                    document.getElementById(`step${step.id}Icon`).classList.replace('text-teal-500/0', 'text-teal-500');
+                    document.getElementById(`step${step.id}Text`).classList.replace('text-white/40', 'text-teal-400');
+                    
+                    loadingStep.textContent = step.text;
+                    loadingBar.style.width = `${step.percent}%`;
+                    loadingPct.textContent = `${step.percent}%`;
+                }
+
+                // Actually load the ThreeJS room behind the scenes
+                await loadRoom(imageUrl, roomLabel);
+                
+                await new Promise(r => setTimeout(r, 400));
+                resolve();
+            });
+        }
+
+        function hideLoading() {
+            loadingOverlay.style.opacity = '0';
+            loadingOverlay.style.pointerEvents = 'none';
+            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 600);
+        }
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
+            camera.target = new THREE.Vector3(0, 0, 0);
+
+            const geometry = new THREE.SphereGeometry(500, 60, 40);
+            geometry.scale(-1, 1, 1);
+
+            const material = new THREE.MeshBasicMaterial({ color: 0x1e293b });
+            sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Boost brightness so images are not too dark
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.NoToneMapping;
+            renderer.toneMappingExposure = 1.2;
+
+            container.appendChild(renderer.domElement);
+
+            container.addEventListener('mousedown', onPointerDown);
+            container.addEventListener('mousemove', onPointerMove);
+            container.addEventListener('mouseup', onPointerUp);
+            container.addEventListener('wheel', onDocumentMouseWheel);
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function setupRoomButtons() {
+            roomControls.innerHTML = '';
+
+            const uniqueRooms = new Map();
+
+            const coverRoom = (propertyData.room_type || 'Main View').replace(/_/g, ' ').toUpperCase();
+            uniqueRooms.set(coverRoom, propertyData.image);
+
+            if (propertyData.gallery && propertyData.gallery.length > 0) {
+                propertyData.gallery.forEach(img => {
+                    const roomName = (img.room || img.room_type || 'Other').replace(/_/g, ' ').toUpperCase();
+                    if (!uniqueRooms.has(roomName) && img.url !== propertyData.image) {
+                        uniqueRooms.set(roomName, img.url);
+                    }
+                });
+            }
+
+            uniqueRooms.forEach((url, label) => {
+                const btn = document.createElement('button');
+                const isActive = (url === propertyData.image);
+
+                btn.className = `room-button px-4 py-2 rounded-xl text-xs font-bold transition-all border border-transparent ui-element ${isActive ? 'active text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`;
+                btn.textContent = label;
+
+                btn.onclick = async () => {
+                    document.querySelectorAll('.room-button').forEach(b => {
+                        b.classList.remove('active', 'text-white');
+                        b.classList.add('text-white/60');
+                    });
+                    btn.classList.add('active', 'text-white');
+                    btn.classList.remove('text-white/60');
+                    await loadRoom(url, label);
+                };
+
+                roomControls.appendChild(btn);
+            });
+        }
+
+        function loadRoom(url, label) {
+            return new Promise((resolve) => {
+                roomTitle.textContent = label;
+
+                if (!url) {
+                    sphere.material.map = createFallbackTexture(label);
+                    sphere.material.needsUpdate = true;
+                    resolve();
+                    return;
+                }
+
+                // Use an Image element directly — avoids CORS preflight issues
+                // with StaticFiles served by FastAPI
+                const img = new Image();
+                img.src = url;
+
+                const timeout = setTimeout(() => {
+                    console.warn('Texture load timed out for:', url);
+                    sphere.material.map = createFallbackTexture(label);
+                    sphere.material.needsUpdate = true;
+                    resolve();
+                }, 8000);
+
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    try {
+                        const texture = new THREE.Texture(img);
+                        texture.encoding = THREE.sRGBEncoding;
+                        texture.needsUpdate = true;
+                        sphere.material.map = texture;
+                        sphere.material.needsUpdate = true;
+                    } catch (e) {
+                        sphere.material.map = createFallbackTexture(label);
+                        sphere.material.needsUpdate = true;
+                    }
+                    resolve();
+                };
+
+                img.onerror = (err) => {
+                    clearTimeout(timeout);
+                    console.warn('Could not load image:', url);
+                    sphere.material.map = createFallbackTexture(label);
+                    sphere.material.needsUpdate = true;
+                    resolve();
+                };
+            });
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onPointerDown(event) {
+            if (event.isPrimary === false) return;
+            isUserInteracting = true;
+            onPointerDownPointerX = event.clientX;
+            onPointerDownPointerY = event.clientY;
+            onPointerDownLon = lon;
+            onPointerDownLat = lat;
+        }
+
+        function onPointerMove(event) {
+            if (isUserInteracting === false) return;
+            lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
+            lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+        }
+
+        function onPointerUp() {
+            isUserInteracting = false;
+        }
+
+        function onDocumentMouseWheel(event) {
+            const fov = camera.fov + event.deltaY * 0.05;
+            camera.fov = THREE.MathUtils.clamp(fov, 10, 75);
+            camera.updateProjectionMatrix();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            update();
+        }
+
+        function update() {
+            lat = Math.max(-85, Math.min(85, lat));
+            phi = THREE.MathUtils.degToRad(90 - lat);
+            theta = THREE.MathUtils.degToRad(lon);
+
+            const x = 500 * Math.sin(phi) * Math.cos(theta);
+            const y = 500 * Math.cos(phi);
+            const z = 500 * Math.sin(phi) * Math.sin(theta);
+
+            camera.lookAt(x, y, z);
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
+

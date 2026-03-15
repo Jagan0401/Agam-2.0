@@ -168,14 +168,24 @@
                             </td>
                             <td class="p-4 text-gray-600 font-medium">${p.location}</td>
                             <td class="p-4 font-bold text-[#008b9c]">${p.price}</td>
-                            <td class="p-4">
+                            <td class="p-4 text-center">
                                 <span class="bg-teal-50 text-[#008b9c] border border-teal-100 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter">
                                     ${p.ai_verified ? 'Verified' : 'Pending'}
                                 </span>
                             </td>
-                            <td class="p-4 flex items-center gap-2 font-bold text-gray-700">
-                                <i data-lucide="${p.quality_score > 7 ? 'check-circle-2' : 'alert-circle'}" class="w-4 h-4 ${p.quality_score > 7 ? 'text-green-500' : 'text-amber-500'}"></i>
-                                ${p.quality_score ? p.quality_score.toFixed(1) : 'N/A'}
+                            <td class="p-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-2 font-bold text-gray-700 mr-4">
+                                        <i data-lucide="${(p.quality_score || 0) > 7 ? 'check-circle-2' : 'alert-circle'}" class="w-4 h-4 ${(p.quality_score || 0) > 7 ? 'text-green-500' : 'text-amber-500'}"></i>
+                                        ${p.quality_score ? p.quality_score.toFixed(1) : 'N/A'}
+                                    </div>
+                                    <a href="3d-view.html?id=${p.property_id || p.id}" class="bg-[#0f172a] hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-sm">
+                                        <i data-lucide="box" class="w-3.5 h-3.5"></i> 3D Visualization
+                                    </a>
+                                    <a href="property.html?id=${p.property_id || p.id}" class="p-2 text-gray-400 hover:text-[#008b9c] transition-colors" title="View Property">
+                                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     `).join('');
